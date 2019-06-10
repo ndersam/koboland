@@ -2,6 +2,9 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from django.urls import reverse
 from django.utils.text import slugify
+from django.utils import timezone
+from datetime import timedelta
+from django.template.defaultfilters import pluralize
 
 
 class Board(models.Model):
@@ -13,7 +16,32 @@ class Board(models.Model):
         return self.name
 
 
-class Topic(models.Model):
+class UserPostMixin:
+    def up_votes(self) -> int:
+        votes = self.votes
+        return votes.filter(is_up_vote=True).count() if votes else 0
+
+    def down_votes(self) -> int:
+        votes = self.votes
+        return votes.filter(is_up_vote=False).count() if votes else 0
+
+    def points(self) -> int:
+        return self.up_votes() - self.down_votes()
+
+    def how_long_ago(self):
+        how_long = timezone.now() - self.date_created
+        if how_long < timedelta(minutes=1):
+            return f'{how_long.seconds} second{pluralize(how_long.seconds)} ago'
+        if how_long < timedelta(hours=1):
+            minutes = how_long.seconds // 60
+            return f'{minutes} minute{pluralize(minutes)} ago'
+        if how_long < timedelta(days=1):
+            hours = how_long.seconds // 3600
+            return f'{hours} hour{pluralize(hours)} ago'
+        return f'{how_long.days} day{pluralize(how_long.days)} ago'
+
+
+class Topic(models.Model, UserPostMixin):
     title = models.CharField(max_length=80)
     slug = models.SlugField(max_length=48)
     author = models.ForeignKey('User', related_name='topics', on_delete=models.SET_NULL, null=True)
@@ -42,9 +70,9 @@ class Topic(models.Model):
 
     def get_absolute_url(self):
         kwargs = {
-            'pk': self.id,
+            'topic_id': self.id,
             'slug': self.slug,
-            'board': self.board.name
+            'topic_slug': self.board.name
         }
         return reverse('topic', kwargs=kwargs)
 
@@ -52,7 +80,7 @@ class Topic(models.Model):
         return self.title
 
 
-class Post(models.Model):
+class Post(models.Model, UserPostMixin):
     author = models.ForeignKey('User', related_name='posts', on_delete=models.SET_NULL, null=True)
     topic = models.ForeignKey('Topic', related_name='posts', on_delete=models.CASCADE)
     content = models.TextField()

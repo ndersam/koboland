@@ -1,0 +1,26 @@
+{% extends 'base_paged_list.html' %}
+
+{% block page_content %}
+
+    <div>
+        <h2>{{ topic.title }}</h2>
+        <p>
+            <a href="#"><strong class="d-block text-gray-dark">{{ topic.author }} {{ topic.how_long_ago }}
+                {% if topic.modified %}(modified){% endif %}</strong></a>
+            {{ topic.content }}
+            <span class="d-block"><span class="text-info">+{{ topic.up_votes }}</span> <span
+                    class="text-danger">-{{ topic.down_votes }}</span> </span>
+        </p>
+    </div>
+
+    {% for post in posts %}
+        <p>
+            <a href="#"><strong class="d-block text-gray-dark">{{ post.author }} {{ post.how_long_ago }}
+                {% if post.modified %}(modified){% endif %}</strong></a>
+            {{ post.content }}
+            <span class="d-block"><span class="text-info">+{{ post.up_votes }}</span> <span
+                    class="text-danger">-{{ post.down_votes }}</span> </span>
+        </p>
+    {% endfor %}
+
+{% endblock page_content %}
