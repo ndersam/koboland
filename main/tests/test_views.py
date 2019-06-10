@@ -28,3 +28,17 @@ class TestPage(TestCase):
             self.assertTrue(models.User.objects.filter(email='user@domain.com').exists())
             self.assertTrue(auth.get_user(self.client).is_authenticated)
             mock_send.assert_called_once()
+
+    def test_valid_login_form_redirects_to_home_page(self):
+        cred = {
+            'email': 'user@domain.com',
+            'username': 'one_bad_boy',
+            'password': 'abcabcabc',
+        }
+        models.User.objects.create_user(**cred)
+        response = self.client.post(reverse('login'), data={
+            'username': cred['username'],
+            'password': cred['password']
+        })
+        self.assertTrue(auth.get_user(self.client).is_authenticated)
+        self.assertRedirects(response, reverse('home'))

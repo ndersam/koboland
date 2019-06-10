@@ -12,7 +12,6 @@ class TestForm(TestCase):
                 'email': 'user@domain.com',
                 'username': 'one_bad_boy',
                 'password1': 'abcabcabc',
-                'password2': 'abcabcabc',
             }
         )
         self.assertTrue(form.is_valid())

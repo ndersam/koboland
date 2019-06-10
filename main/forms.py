@@ -3,8 +3,9 @@ import logging
 from django import forms
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
-from django.contrib.auth.forms import UsernameField
+from django.contrib.auth.forms import UsernameField, AuthenticationForm as DjangoAuthenticationForm
 from django.core.mail import send_mail
+from django.utils.translation import ugettext_lazy as _
 
 from .models import User
 
@@ -12,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class UserCreationForm(DjangoUserCreationForm):
+    """ This was subclassed to use only a single password. """
     password2 = None
 
     class Meta(DjangoUserCreationForm.Meta):
@@ -39,3 +41,13 @@ class UserCreationForm(DjangoUserCreationForm):
                   [self.cleaned_data['email']],
                   fail_silently=False
                   )
+
+
+class AuthenticationForm(DjangoAuthenticationForm):
+    """ Subclassed to change `invalid_login` message. """
+    error_messages = {
+        'invalid_login': _(
+            "Invalid username/password combination"
+        ),
+        'inactive': _("This account is inactive."),
+    }
