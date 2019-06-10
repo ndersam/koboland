@@ -10,6 +10,6 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='login.html', form_class=AuthenticationForm),
          name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    re_path(r'~(?P<board>[A-Za-z0-9-_]+)/', TopicListView.as_view(), name='board'),
-    re_path(r'~(?P<board>[A-Za-z0-9-_]+)/(?P<topic_id>\d+)/(?P<topic_slug>[A-Za-z0-9-_]+)/', PostListView.as_view(), name='topic'),
+    re_path(r'~(?P<board>[A-Za-z0-9-_]+)/$', TopicListView.as_view(), name='board'),
+    re_path(r'~(?P<board>[A-Za-z0-9-_]+)/(?P<topic_id>\d+)/(?P<topic_slug>[A-Za-z0-9-_]+)/$', PostListView.as_view(), name='topic'),
 ]
