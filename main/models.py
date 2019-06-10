@@ -7,9 +7,20 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 
+from main import model_fields
+
 
 class Board(models.Model):
-    name = models.CharField(max_length=32, primary_key=True)
+    # NEWEST = 10
+    # MOST_VOTES = 20
+    # MOST_COMMENTS = 30
+    # BOARD_SORT = (
+    #     (NEWEST, 'Newest'),
+    #     (MOST_COMMENTS, 'Most Posts'),
+    #     (MOST_VOTES, 'Most Votes'),
+    # )
+
+    name = model_fields.CICharField(max_length=32, primary_key=True)
     description = models.TextField(blank=True)
     moderators = models.ManyToManyField('User', related_name='moderates_on')
 
