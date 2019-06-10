@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class SignupView(FormView):
-    template_name = 'signup.html'
+    template_name = 'main/signup.html'
     form_class = UserCreationForm
 
     def get_success_url(self):
@@ -35,7 +35,7 @@ class SignupView(FormView):
 
 class PostListView(ListView):
     paginate_by = 30
-    template_name = 'post_list.html'
+    template_name = 'main/post_list.html'
     context_object_name = 'posts'
 
     def get_queryset(self):
@@ -50,7 +50,7 @@ class PostListView(ListView):
 
 class TopicListView(ListView):
     paginate_by = 30
-    template_name = 'topic_list.html'
+    template_name = 'main/topic_list.html'
     context_object_name = 'topics'
 
     def get_queryset(self):
@@ -65,7 +65,7 @@ class TopicListView(ListView):
 
 class HomeListView(ListView):
     paginate_by = 30
-    template_name = 'home.html'
+    template_name = 'main/home.html'
     context_object_name = 'topics'
 
     def get_queryset(self):
