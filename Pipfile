@@ -10,6 +10,7 @@ django = "*"
 psycopg2 = "*"
 factory-boy = "*"
 djangorestframework = "*"
+django-filter = "*"
 
 [requires]
 python_version = "3.7"
