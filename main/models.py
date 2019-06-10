@@ -1,10 +1,11 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from django.urls import reverse
-from django.utils.text import slugify
-from django.utils import timezone
-from datetime import timedelta
 from django.template.defaultfilters import pluralize
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.text import slugify
 
 
 class Board(models.Model):
@@ -14,6 +15,12 @@ class Board(models.Model):
 
     def __str__(self):
         return self.name
+
+    def follower_count(self):
+        return self.followers().count()
+
+    def get_absolute_url(self):
+        return reverse('board', kwargs={'board': self.name})
 
 
 class UserPostMixin:
@@ -71,8 +78,8 @@ class Topic(models.Model, UserPostMixin):
     def get_absolute_url(self):
         kwargs = {
             'topic_id': self.id,
-            'slug': self.slug,
-            'topic_slug': self.board.name
+            'topic_slug': self.slug,
+            'board': self.board.name
         }
         return reverse('topic', kwargs=kwargs)
 

@@ -6,7 +6,7 @@ from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
 from .forms import UserCreationForm
-from .models import Topic
+from .models import Topic, Board
 
 logger = logging.getLogger(__name__)
 
@@ -46,3 +46,27 @@ class PostListView(ListView):
         context = super().get_context_data(object_list=object_list, **kwargs)
         context['topic'] = self.topic
         return context
+
+
+class TopicListView(ListView):
+    paginate_by = 30
+    template_name = 'topic_list.html'
+    context_object_name = 'topics'
+
+    def get_queryset(self):
+        self.board = Board.objects.get(name=self.kwargs['board'])
+        return self.board.topics.all()
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context['board'] = self.board
+        return context
+
+
+class HomeListView(ListView):
+    paginate_by = 30
+    template_name = 'home.html'
+    context_object_name = 'topics'
+
+    def get_queryset(self):
+        return Topic.objects.all()

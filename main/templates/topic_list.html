@@ -1,17 +1,19 @@
 {% extends 'base_paged_list.html' %}
 
 {% block page_content %}
+
     <div>
-        <h2>{{ Home }}</h2>
+        <h2>{{ board.name }}</h2>
+        <p>{{ board.description }}</p>
     </div>
 
     {% for topic in topics %}
         <p><a href="{{ topic.get_absolute_url }}">
             {{ topic.title }}
-            <span class="d-block"><a href="{{ topic.board.get_absolute_url }}">{{ topic.board }}</a><span
-                    class="text-info">+{{ topic.up_votes }}</span> <span
+            <span class="d-block"><span class="text-info">+{{ topic.up_votes }}</span> <span
                     class="text-danger">-{{ topic.down_votes }}</span> </span>
         </a>
         </p>
     {% endfor %}
+
 {% endblock page_content %}
