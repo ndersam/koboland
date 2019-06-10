@@ -75,7 +75,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'koboland_db',
-        'USER': 'admin',
+        'USER': 'postgres',
         'PASSWORD': 'l500124ad',
         'HOST': 'localhost',
         'PORT': '5432',

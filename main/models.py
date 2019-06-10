@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
+from django.urls import reverse
+from django.utils.text import slugify
 
 
 class Board(models.Model):
@@ -13,7 +15,7 @@ class Board(models.Model):
 
 class Topic(models.Model):
     title = models.CharField(max_length=80)
-    slug = models.CharField(max_length=48)
+    slug = models.SlugField(max_length=48)
     author = models.ForeignKey('User', related_name='topics', on_delete=models.SET_NULL, null=True)
     board = models.ForeignKey('Board', related_name='topics', on_delete=models.CASCADE)
     content = models.TextField()
@@ -26,13 +28,46 @@ class Topic(models.Model):
     def remove_vote(self, user):
         self.votes.filter(id=user.id).delete()
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        value = self.title
+        # Only set the slug once ==> Updates not permitted
+        # Initially, before the first save, this is None
+        if not self.id:
+            self.slug = slugify(value, allow_unicode=True)[:48]
+        else:
+            self.modified = True
+        super().save(force_insert=force_insert, force_update=force_update, using=using,
+                     update_fields=update_fields)
+
+    def get_absolute_url(self):
+        kwargs = {
+            'pk': self.id,
+            'slug': self.slug,
+            'board': self.board.name
+        }
+        return reverse('topic', kwargs=kwargs)
+
+    def __str__(self):
+        return self.title
+
 
 class Post(models.Model):
     author = models.ForeignKey('User', related_name='posts', on_delete=models.SET_NULL, null=True)
-    board = models.ForeignKey('Topic', related_name='posts', on_delete=models.CASCADE)
+    topic = models.ForeignKey('Topic', related_name='posts', on_delete=models.CASCADE)
     content = models.TextField()
     modified = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.id} - {self.author} - {self.content[:20]}...'
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        # Initially, before the first save, this is None
+        self.modified = self.id is not None
+        super().save(force_insert=force_insert, force_update=force_update, using=using,
+                     update_fields=update_fields)
 
 
 class TopicVote(models.Model):
@@ -84,5 +119,4 @@ class User(AbstractUser):
     email = models.EmailField('email address', unique=True)
     is_banned = models.BooleanField(default=False)
     boards = models.ManyToManyField('Board', related_name='followers')
-
     objects = UserManager()

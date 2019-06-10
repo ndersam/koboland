@@ -11,4 +11,5 @@ urlpatterns = [
     path('login/', auth_views.LoginView.as_view(template_name='login.html', form_class=AuthenticationForm),
          name='login'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('b/<slug:board>/<int:pk>/<slug:slug>/', TemplateView.as_view(template_name='home.html'), name='topic')
 ]
