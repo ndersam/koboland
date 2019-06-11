@@ -1,5 +1,12 @@
 import {Controller} from "stimulus";
 
+const LIKE = 1;
+const SHARE = 2;
+const DATA_POST_ID = 'data-post';
+const DATA_CHECKED_STATE = 'data-checked-state';
+const DATA_POST_VOTES = 'data-post-votes';
+const URL_POST_VOTE = '/api-auth/post/vote/';
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -20,26 +27,37 @@ function get_method(is_checked) {
     return is_checked ? 'DELETE' : 'POST';
 }
 
-const LIKE = 1;
-const SHARE = 2;
 
 export default class extends Controller {
+    get post() {
+        return this.element.getAttribute(DATA_POST_ID);
+    }
+
+    get checked() {
+        return Number.parseInt(this.element.getAttribute(DATA_CHECKED_STATE)) === 1;
+    }
+
+    set checked(checked) {
+        this.element.setAttribute(DATA_CHECKED_STATE, checked ? '1' : '0');
+    }
+
+    get votes() {
+        // Returns number of likes or shares, depending on the attribute (this.element)
+        return Number.parseInt(this.element.getAttribute(DATA_POST_VOTES));
+    }
+
+    set votes(votes) {
+        this.element.setAttribute(DATA_POST_VOTES, votes);
+    }
+
     vote(vote_type, method) {
-        console.log("refresh!!!!!!!!!!", this.element.getAttribute('data-post'));
-
-        const csrftoken = getCookie('csrftoken');
-        const url = '/api-auth/post/vote/';
-        const post = this.element.getAttribute('data-post');
-
-
         const headers = new Headers();
         headers.set('Content-type', 'application/json');
-        headers.set('X-CSRFToken', csrftoken);
+        headers.set('X-CSRFToken', getCookie('csrftoken'));
 
-        const payload = JSON.stringify({post: Number.parseInt(post), vote_type: vote_type});
-        console.log(payload);
+        const payload = JSON.stringify({post: Number.parseInt(this.post), vote_type: vote_type});
 
-        fetch(url, {
+        fetch(URL_POST_VOTE, {
             method: method,
             body: payload,
             headers: headers
@@ -48,17 +66,30 @@ export default class extends Controller {
         });
     }
 
-    is_checked() {
-        return Number.parseInt(this.element.getAttribute('data-checked-state')) === 1;
+    like() {
+        this.vote(LIKE, get_method(this.checked));
+        if (this.checked) {
+            this.votes--;
+            this.element.innerHTML = `Like(${this.votes})`;
+        } else {
+            this.votes++;
+            this.element.innerHTML = `Liked(${this.votes})`;
+        }
+        this.checked = !this.checked;
     }
 
-    like() {
-        const checked = this.is_checked();
-        this.vote(LIKE, get_method(checked));
-        if (checked) {
-            this.element.innerHTML = 'Like';
+    share() {
+        this.vote(SHARE, get_method(this.checked));
+
+        if (this.checked) {
+            this.votes--;
+            this.element.innerHTML = `Share(${this.votes})`;
         } else {
-            this.element.innerHTML = 'Liked';
+            this.votes++;
+            this.element.innerHTML = `Shared(${this.votes})`;
         }
+        this.checked = !this.checked;
+
     }
+
 }

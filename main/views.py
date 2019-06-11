@@ -10,8 +10,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .forms import UserCreationForm
-from .models import Topic, Board, PostVote
-from .serializers import PostVoteSerializer
+from .models import Topic, Board, PostVote, TopicVote
+from .serializers import PostVoteSerializer, TopicVoteSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class PostListView(ListView):
                 if vote.count() > 0:
                     vote = vote.first()
                     post.is_liked = vote.vote_type == PostVote.LIKE
-                    post.is_shared = vote.vote_type == PostVote.LIKE
+                    post.is_shared = vote.vote_type == PostVote.SHARE
         return posts
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -105,4 +105,27 @@ class PostVoteView(APIView):
 
     def delete(self, request, format=None):
         self.get_object(request.user, request.data['post'], request.data['vote_type']).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TopicVoteView(APIView):
+    queryset = TopicVote.objects.all()
+
+    @staticmethod
+    def get_object(user, topic_id, vote_type):
+        try:
+            return TopicVote.objects.get(user=user, topic_id=topic_id, vote_type=vote_type)
+        except:
+            raise Http404
+
+    def post(self, request, format=None):
+        request.data['user'] = request.user.username
+        serializer = TopicVoteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, format=None):
+        self.get_object(request.user, request.data['topic'], request.data['vote_type']).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
