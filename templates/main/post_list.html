@@ -18,8 +18,18 @@
             <a href="#"><strong class="d-block text-gray-dark">{{ post.author }} {{ post.how_long_ago }}
                 {% if post.modified %}(modified){% endif %}</strong></a>
             {{ post.content }}
-            <span class="d-block"><span class="text-info">+{{ post.up_votes }}</span> <span
-                    class="text-danger">-{{ post.down_votes }}</span> </span>
+            {% if user.is_authenticated %}
+                <span class="d-block"><span class="text-info" data-action="click->post#up_vote"
+                                            data-controller="post"
+                                            data-post="{{ post.id }}">+{{ post.up_votes }}</span> <a
+                        href="{% url 'post_vote' %}" class="text-danger"
+                        data-post="{{ post.id }}">-{{ post.down_votes }}</a>
+            </span>
+            {% else %}
+                <span class="d-block"><span class="text-info">+{{ post.up_votes }}</span><span
+                        class="text-danger">-{{ post.down_votes }}</span>
+            </span>
+            {% endif %}
         </p>
     {% endfor %}
 

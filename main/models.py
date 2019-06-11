@@ -58,6 +58,9 @@ class UserPostMixin:
             return f'{hours} hour{pluralize(hours)} ago'
         return f'{how_long.days} day{pluralize(how_long.days)} ago'
 
+    def has_vote(self, user):
+        return self.votes.filter(user=user).count() > 0
+
 
 class Topic(models.Model, UserPostMixin):
     title = models.CharField(max_length=80)
