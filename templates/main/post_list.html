@@ -8,8 +8,8 @@
             <a href="#"><strong class="d-block text-gray-dark">{{ topic.author }} {{ topic.how_long_ago }}
                 {% if topic.modified %}(modified){% endif %}</strong></a>
             {{ topic.content }}
-            <span class="d-block"><span class="text-info">+{{ topic.up_votes }}</span> <span
-                    class="text-danger">-{{ topic.down_votes }}</span> </span>
+            <span class="d-block"><span class="text-info">+{{ topic.likes }}</span> <span
+                    class="text-danger">-{{ topic.shares }}</span> </span>
         </p>
     </div>
 
@@ -21,13 +21,13 @@
             {% if user.is_authenticated %}
                 <span class="d-block"><span class="text-info" data-action="click->post#up_vote"
                                             data-controller="post"
-                                            data-post="{{ post.id }}">+{{ post.up_votes }}</span> <a
+                                            data-post="{{ post.id }}">Like{{ post.likes }}</span> <a
                         href="{% url 'post_vote' %}" class="text-danger"
-                        data-post="{{ post.id }}">-{{ post.down_votes }}</a>
+                        data-post="{{ post.id }}">Share{{ post.shares }}</a>
             </span>
             {% else %}
-                <span class="d-block"><span class="text-info">+{{ post.up_votes }}</span><span
-                        class="text-danger">-{{ post.down_votes }}</span>
+                <span class="d-block"><span class="text-info">Likes{{ post.likes }}</span><span
+                        class="text-danger">Shares{{ post.shares }}</span>
             </span>
             {% endif %}
         </p>

@@ -1,11 +1,13 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 
 from main import model_fields
 
@@ -34,17 +36,18 @@ class Board(models.Model):
         return reverse('board', kwargs={'board': self.name})
 
 
-class UserPostMixin:
-    def up_votes(self) -> int:
-        votes = self.votes
-        return votes.filter(is_up_vote=True).count() if votes else 0
+class Submission(models.Model):
+    content = models.TextField(blank=True)
+    content_html = models.TextField(blank=True)
+    modified = models.BooleanField(default=False)
+    date_created = models.DateTimeField(auto_now_add=True)
 
-    def down_votes(self) -> int:
-        votes = self.votes
-        return votes.filter(is_up_vote=False).count() if votes else 0
+    likes = models.IntegerField(default=0)
+    shares = models.IntegerField(default=0)
+    score = models.IntegerField(default=0)
 
-    def points(self) -> int:
-        return self.up_votes() - self.down_votes()
+    class Meta:
+        abstract = True
 
     def how_long_ago(self):
         how_long = timezone.now() - self.date_created
@@ -58,18 +61,12 @@ class UserPostMixin:
             return f'{hours} hour{pluralize(hours)} ago'
         return f'{how_long.days} day{pluralize(how_long.days)} ago'
 
-    def has_vote(self, user):
-        return self.votes.filter(user=user).count() > 0
 
-
-class Topic(models.Model, UserPostMixin):
+class Topic(Submission):
     title = models.CharField(max_length=80)
     slug = models.SlugField(max_length=48)
     author = models.ForeignKey('User', related_name='topics', on_delete=models.SET_NULL, null=True)
     board = models.ForeignKey('Board', related_name='topics', on_delete=models.CASCADE)
-    content = models.TextField()
-    modified = models.BooleanField(default=False)
-    date_created = models.DateTimeField(auto_now_add=True)
 
     def set_vote(self, user, up_vote=True):
         TopicVote.objects.get_or_create(topic=self, user=user, is_up_vote=up_vote)
@@ -101,12 +98,9 @@ class Topic(models.Model, UserPostMixin):
         return self.title
 
 
-class Post(models.Model, UserPostMixin):
+class Post(Submission):
     author = models.ForeignKey('User', related_name='posts', on_delete=models.SET_NULL, null=True)
     topic = models.ForeignKey('Topic', related_name='posts', on_delete=models.CASCADE)
-    content = models.TextField()
-    modified = models.BooleanField(default=False)
-    date_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.id} - {self.author} - {self.content[:20]}...'
@@ -119,22 +113,81 @@ class Post(models.Model, UserPostMixin):
                      update_fields=update_fields)
 
 
-class TopicVote(models.Model):
+class SubmissionVote(models.Model):
+    LIKE = 1
+    SHARE = 2
+    VOTE_TYPES = (
+        (LIKE, _("Like")), (SHARE, _("Share")),
+    )
+    vote_type = models.IntegerField(choices=VOTE_TYPES, default=None, null=False)
+
+    class Meta:
+        abstract = True
+
+    @classmethod
+    def get_or_create(cls, user, submission, vote_type):
+        """
+           Create a new vote object and return it.
+           It also updates the likes/shares/score fields in the vote object
+           :param cls:
+           :param user: User
+           :param submission: Post | Topic
+           :param vote_type: int ... representing like or share
+           :return:
+        """
+        kwargs = {cls.submission_name: submission}
+        vote, created = cls.objects.get_or_create(user=user, vote_type=vote_type, **kwargs)
+        if created:
+            if vote_type == cls.LIKE:
+                submission.likes += 1
+            elif vote_type == cls.SHARE:
+                submission.shares += 1
+            submission.save()
+
+        return vote
+
+    @classmethod
+    def remove(cls, user, submission, vote_type):
+        """
+           Removes a vote object (if exists)
+           It also updates the likes/shares/score fields in the vote object
+           :param cls:
+           :param user: User
+           :param submission: Post | Topic
+           :param vote_type: int ... representing like or share
+           :return:
+        """
+        try:
+            kwargs = {cls.submission_name: submission}
+            cls.objects.get(user=user, vote_type=vote_type, **kwargs).delete()
+            if vote_type == cls.LIKE:
+                submission.likes += -1
+            elif vote_type == cls.SHARE:
+                submission.shares += -1
+        except:
+            pass
+
+
+class TopicVote(SubmissionVote):
     user = models.ForeignKey('User', related_name='topic_votes', on_delete=models.CASCADE)
-    is_up_vote = models.BooleanField(default=True)
     topic = models.ForeignKey('Topic', related_name='votes', on_delete=models.CASCADE)
 
+    # HACK (There's probably a better way of writing this)
+    submission_name = 'topic'
+
     class Meta:
-        unique_together = ('user', 'topic')
+        unique_together = ('user', 'topic', 'vote_type')
 
 
-class PostVote(models.Model):
+class PostVote(SubmissionVote):
     user = models.ForeignKey('User', related_name='post_votes', on_delete=models.CASCADE)
-    is_up_vote = models.BooleanField(default=True)
     post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
 
+    # HACK (There's probably a better way of writing this)
+    submission_name = 'post'
+
     class Meta:
-        unique_together = ('user', 'post')
+        unique_together = ('user', 'post', 'vote_type')
 
 
 class UserManager(BaseUserManager):
@@ -165,7 +218,22 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    # Copied from `AbstractUser` to change max_length
+    username_validator = UnicodeUsernameValidator()
+    username = models.CharField(
+        _('username'),
+        max_length=16,
+        unique=True,
+        help_text=_('Required. 16 characters or fewer. Letters, digits and @/./+/-/_ only.'),
+        validators=[username_validator],
+        error_messages={
+            'unique': _("A user with that username already exists."),
+        },
+    )
+
     email = models.EmailField('email address', unique=True)
     is_banned = models.BooleanField(default=False)
     boards = models.ManyToManyField('Board', related_name='followers')
+
+    about_text = models.TextField(blank=True, null=True)
     objects = UserManager()

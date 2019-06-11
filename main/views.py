@@ -9,7 +9,7 @@ from rest_framework.generics import CreateAPIView
 from .forms import UserCreationForm
 from .models import Topic, Board, PostVote
 from .serializers import PostVoteSerializer
-from django.db.models import Exists
+
 logger = logging.getLogger(__name__)
 
 
@@ -42,7 +42,7 @@ class PostListView(ListView):
 
     def get_queryset(self):
         self.topic = Topic.objects.get(id=self.kwargs['topic_id'])
-        return self.topic.posts.all()#.select_related('user').select_related('')
+        return self.topic.posts.all()  # .select_related('user').select_related('')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)

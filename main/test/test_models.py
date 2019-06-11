@@ -41,9 +41,55 @@ class TestModel(TestCase):
         post.save()
         self.assertTrue(post.modified)
 
+    def test_post_likes_works_correctly(self):
+        user = factories.UserFactory()
+        board = factories.BoardFactory()
+        topic = factories.TopicFactory(board=board, author=user)
+        post = factories.PostFactory(author=user, topic=topic)
+
+        vote = models.PostVote.get_or_create(user, post, models.SubmissionVote.LIKE)
+        self.assertEqual(vote.vote_type, models.SubmissionVote.LIKE)
+        self.assertEqual(post.votes.count(), 1)
+        self.assertEqual(post.likes, 1)
+        self.assertEqual(user.post_votes.count(), 1)
+
+    def test_post_shares_works_correctly(self):
+        user = factories.UserFactory()
+        board = factories.BoardFactory()
+        topic = factories.TopicFactory(board=board, author=user)
+        post = factories.PostFactory(author=user, topic=topic)
+
+        vote = models.PostVote.get_or_create(user, post, models.SubmissionVote.SHARE)
+        self.assertEqual(vote.vote_type, models.SubmissionVote.SHARE)
+        self.assertEqual(post.votes.count(), 1)
+        self.assertEqual(post.shares, 1)
+        self.assertEqual(user.post_votes.count(), 1)
+
+    def test_topic_likes_works_correctly(self):
+        user = factories.UserFactory()
+        board = factories.BoardFactory()
+        topic = factories.TopicFactory(board=board, author=user)
+
+        vote = models.TopicVote.get_or_create(user, topic, models.SubmissionVote.LIKE)
+        self.assertEqual(vote.vote_type, models.SubmissionVote.LIKE)
+        self.assertEqual(topic.votes.count(), 1)
+        self.assertEqual(topic.likes, 1)
+        self.assertEqual(user.topic_votes.count(), 1)
+
+    def test_topic_shares_works_correctly(self):
+        user = factories.UserFactory()
+        board = factories.BoardFactory()
+        topic = factories.TopicFactory(board=board, author=user)
+
+        vote = models.TopicVote.get_or_create(user, topic, models.SubmissionVote.SHARE)
+        self.assertEqual(vote.vote_type, models.SubmissionVote.SHARE)
+        self.assertEqual(topic.votes.count(), 1)
+        self.assertEqual(topic.shares, 1)
+        self.assertEqual(user.topic_votes.count(), 1)
+
 
 # noinspection PyArgumentList
-class UserPostMixinTestCase(TestCase):
+class SubmissionTestCase(TestCase):
 
     def run_on_subclasses(func):
         classes = [Post, Topic]
