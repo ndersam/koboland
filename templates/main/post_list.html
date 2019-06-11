@@ -19,15 +19,17 @@
                 {% if post.modified %}(modified){% endif %}</strong></a>
             {{ post.content }}
             {% if user.is_authenticated %}
-                <span class="d-block"><span class="text-info" data-action="click->post#up_vote"
+                <span class="d-block"><span class="text-info" data-action="click->post#like"
                                             data-controller="post"
-                                            data-post="{{ post.id }}">Like{{ post.likes }}</span> <a
+                                            data-checked-state="{% if post.is_liked %}1{% else %}0{% endif %}"
+                                            data-post="{{ post.id }}">Like{% if post.is_liked %}d{% endif %}
+                    ({{ post.likes }})</span> <a
                         href="{% url 'post_vote' %}" class="text-danger"
-                        data-post="{{ post.id }}">Share{{ post.shares }}</a>
+                        data-post="{{ post.id }}">Share{% if post.is_shared %}d{% endif %}({{ post.shares }})</a>
             </span>
             {% else %}
-                <span class="d-block"><span class="text-info">Likes{{ post.likes }}</span><span
-                        class="text-danger">Shares{{ post.shares }}</span>
+                <span class="d-block"><span class="text-info">Likes({{ post.likes }})</span> <span
+                        class="text-danger">Shares({{ post.shares }})</span>
             </span>
             {% endif %}
         </p>

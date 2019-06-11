@@ -1,12 +1,12 @@
 from rest_framework import serializers
 
-from main import models
+from main.models import PostVote, User, Post
 
 
 class PostVoteSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(read_only=True)
-    post = serializers.PrimaryKeyRelatedField(read_only=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
 
     class Meta:
-        model = models.PostVote
-        fields = ('is_up_vote', 'post', 'user')
+        model = PostVote
+        fields = ('vote_type', 'post', 'user')

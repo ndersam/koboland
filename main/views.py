@@ -2,9 +2,12 @@
 import logging
 
 from django.contrib.auth import authenticate, login
+from django.http import Http404
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
-from rest_framework.generics import CreateAPIView
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .forms import UserCreationForm
 from .models import Topic, Board, PostVote
@@ -42,7 +45,15 @@ class PostListView(ListView):
 
     def get_queryset(self):
         self.topic = Topic.objects.get(id=self.kwargs['topic_id'])
-        return self.topic.posts.all()  # .select_related('user').select_related('')
+        posts = self.topic.posts.all().prefetch_related('votes')
+        if self.request.user.is_authenticated:
+            for post in posts:
+                vote = post.votes.filter(user=self.request.user)
+                if vote.count() > 0:
+                    vote = vote.first()
+                    post.is_liked = vote.vote_type == PostVote.LIKE
+                    post.is_shared = vote.vote_type == PostVote.LIKE
+        return posts
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -74,13 +85,24 @@ class HomeListView(ListView):
         return Topic.objects.all()
 
 
-class PostVoteView(CreateAPIView):
+class PostVoteView(APIView):
     queryset = PostVote.objects.all()
-    serializer_class = PostVoteSerializer
 
-    # def post(self, request, *args, **kwargs):
-    #     request.data['user'] = self.request.user.username
-    #     return super().post(request, *args, **kwargs)
+    @staticmethod
+    def get_object(user, post_id, vote_type):
+        try:
+            return PostVote.objects.get(user=user, post_id=post_id, vote_type=vote_type)
+        except:
+            raise Http404
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user, post_id=self.request.data['post_id'])
+    def post(self, request, format=None):
+        request.data['user'] = request.user.username
+        serializer = PostVoteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, format=None):
+        self.get_object(request.user, request.data['post'], request.data['vote_type']).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -124,70 +124,55 @@ class SubmissionVote(models.Model):
     class Meta:
         abstract = True
 
-    @classmethod
-    def get_or_create(cls, user, submission, vote_type):
-        """
-           Create a new vote object and return it.
-           It also updates the likes/shares/score fields in the vote object
-           :param cls:
-           :param user: User
-           :param submission: Post | Topic
-           :param vote_type: int ... representing like or share
-           :return:
-        """
-        kwargs = {cls.submission_name: submission}
-        vote, created = cls.objects.get_or_create(user=user, vote_type=vote_type, **kwargs)
-        if created:
-            if vote_type == cls.LIKE:
-                submission.likes += 1
-            elif vote_type == cls.SHARE:
-                submission.shares += 1
-            submission.save()
-
-        return vote
-
-    @classmethod
-    def remove(cls, user, submission, vote_type):
-        """
-           Removes a vote object (if exists)
-           It also updates the likes/shares/score fields in the vote object
-           :param cls:
-           :param user: User
-           :param submission: Post | Topic
-           :param vote_type: int ... representing like or share
-           :return:
-        """
-        try:
-            kwargs = {cls.submission_name: submission}
-            cls.objects.get(user=user, vote_type=vote_type, **kwargs).delete()
-            if vote_type == cls.LIKE:
-                submission.likes += -1
-            elif vote_type == cls.SHARE:
-                submission.shares += -1
-        except:
-            pass
-
 
 class TopicVote(SubmissionVote):
     user = models.ForeignKey('User', related_name='topic_votes', on_delete=models.CASCADE)
     topic = models.ForeignKey('Topic', related_name='votes', on_delete=models.CASCADE)
 
-    # HACK (There's probably a better way of writing this)
-    submission_name = 'topic'
-
     class Meta:
         unique_together = ('user', 'topic', 'vote_type')
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if self.vote_type == self.LIKE:
+            self.topic.likes += 1
+        else:
+            self.topic.shares += 1
+        self.topic.save()
+        super().save(force_insert, force_update, using, update_fields)
+
+    def delete(self, using=None, keep_parents=False):
+        if self.vote_type == self.LIKE:
+            self.topic.likes += -1
+        else:
+            self.topic.shares += -1
+        self.topic.save()
+        super().delete(using, keep_parents)
 
 
 class PostVote(SubmissionVote):
     user = models.ForeignKey('User', related_name='post_votes', on_delete=models.CASCADE)
     post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
 
-    # HACK (There's probably a better way of writing this)
-    submission_name = 'post'
-
     class Meta:
         unique_together = ('user', 'post', 'vote_type')
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if self.vote_type == self.LIKE:
+            self.post.likes += 1
+        else:
+            self.post.shares += 1
+        self.post.save()
+        super().save(force_insert, force_update, using, update_fields)
+
+    def delete(self, using=None, keep_parents=False):
+        if self.vote_type == self.LIKE:
+            self.post.likes += -1
+        else:
+            self.post.shares += -1
+        self.post.save()
+        super().delete(using, keep_parents)
 
 
 class UserManager(BaseUserManager):
@@ -223,7 +208,7 @@ class User(AbstractUser):
     username = models.CharField(
         _('username'),
         max_length=16,
-        unique=True,
+        unique=True, primary_key=True,
         help_text=_('Required. 16 characters or fewer. Letters, digits and @/./+/-/_ only.'),
         validators=[username_validator],
         error_messages={
