@@ -42,17 +42,26 @@ class PostListView(ListView):
     paginate_by = 30
     template_name = 'main/post_list.html'
     context_object_name = 'posts'
+    ordering = ['-date_created']
 
     def get_queryset(self):
         self.topic = Topic.objects.get(id=self.kwargs['topic_id'])
-        posts = self.topic.posts.all().prefetch_related('votes')
+        votes = self.topic.votes.filter(user=self.request.user)
+        for vote in votes:
+            if vote.vote_type == TopicVote.LIKE:
+                self.topic.is_liked = True
+            elif vote.vote_type == TopicVote.SHARE:
+                self.topic.is_shared = True
+
+        posts = self.topic.posts.all().prefetch_related('votes').order_by(*self.ordering)
         if self.request.user.is_authenticated:
             for post in posts:
-                vote = post.votes.filter(user=self.request.user)
-                if vote.count() > 0:
-                    vote = vote.first()
-                    post.is_liked = vote.vote_type == PostVote.LIKE
-                    post.is_shared = vote.vote_type == PostVote.SHARE
+                votes = post.votes.filter(user=self.request.user)
+                for vote in votes:
+                    if vote.vote_type == PostVote.LIKE:
+                        post.is_liked = True
+                    elif vote.vote_type == PostVote.SHARE:
+                        post.is_shared = True
         return posts
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -65,10 +74,11 @@ class TopicListView(ListView):
     paginate_by = 30
     template_name = 'main/topic_list.html'
     context_object_name = 'topics'
+    ordering = ['date_created']
 
     def get_queryset(self):
         self.board = Board.objects.get(name=self.kwargs['board'])
-        return self.board.topics.all()
+        return self.board.topics.order_by(*self.ordering)
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -80,9 +90,10 @@ class HomeListView(ListView):
     paginate_by = 30
     template_name = 'main/home.html'
     context_object_name = 'topics'
+    ordering = ['date_created']
 
     def get_queryset(self):
-        return Topic.objects.all()
+        return Topic.objects.order_by(*self.ordering)
 
 
 class PostVoteView(APIView):

@@ -68,6 +68,8 @@ class Topic(Submission):
     author = models.ForeignKey('User', related_name='topics', on_delete=models.SET_NULL, null=True)
     board = models.ForeignKey('Board', related_name='topics', on_delete=models.CASCADE)
 
+    post_count = models.IntegerField(default=0)
+
     def set_vote(self, user, up_vote=True):
         TopicVote.objects.get_or_create(topic=self, user=user, is_up_vote=up_vote)
 
@@ -81,8 +83,6 @@ class Topic(Submission):
         # Initially, before the first save, this is None
         if not self.id:
             self.slug = slugify(value, allow_unicode=True)[:48]
-        else:
-            self.modified = True
         super().save(force_insert=force_insert, force_update=force_update, using=using,
                      update_fields=update_fields)
 
@@ -107,8 +107,10 @@ class Post(Submission):
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        # Initially, before the first save, this is None
-        self.modified = self.id is not None
+        # Initially, before first save, this is None
+        if self.id is None:
+            self.topic.post_count += 1
+            self.topic.save()
         super().save(force_insert=force_insert, force_update=force_update, using=using,
                      update_fields=update_fields)
 

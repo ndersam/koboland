@@ -2,10 +2,17 @@ import {Controller} from "stimulus";
 
 const LIKE = 1;
 const SHARE = 2;
-const DATA_POST_ID = 'data-post';
-const DATA_CHECKED_STATE = 'data-checked-state';
-const DATA_POST_VOTES = 'data-post-votes';
+
+const DATA_ITEM_CLASS = 'data-item-class';
+const DATA_ITEM_ID = 'data-item';
+const DATA_ITEM_CHECKED = 'data-item-checked';
+const DATA_ITEM_VOTES = 'data-item-votes';
+
+
 const URL_POST_VOTE = '/api-auth/post/vote/';
+const URL_TOPIC_VOTE = '/api-auth/topic/vote/';
+const POST_CLASS = 'post';
+const TOPIC_CLASS = 'topic';
 
 function getCookie(name) {
     let cookieValue = null;
@@ -29,25 +36,35 @@ function get_method(is_checked) {
 
 
 export default class extends Controller {
-    get post() {
-        return this.element.getAttribute(DATA_POST_ID);
+    get item() {
+        return this.element.getAttribute(DATA_ITEM_ID);
     }
 
     get checked() {
-        return Number.parseInt(this.element.getAttribute(DATA_CHECKED_STATE)) === 1;
+        return Number.parseInt(this.element.getAttribute(DATA_ITEM_CHECKED)) === 1;
     }
 
     set checked(checked) {
-        this.element.setAttribute(DATA_CHECKED_STATE, checked ? '1' : '0');
+        this.element.setAttribute(DATA_ITEM_CHECKED, checked ? '1' : '0');
     }
 
     get votes() {
         // Returns number of likes or shares, depending on the attribute (this.element)
-        return Number.parseInt(this.element.getAttribute(DATA_POST_VOTES));
+        return Number.parseInt(this.element.getAttribute(DATA_ITEM_VOTES));
     }
 
     set votes(votes) {
-        this.element.setAttribute(DATA_POST_VOTES, votes);
+        this.element.setAttribute(DATA_ITEM_VOTES, votes);
+    }
+
+    connect() {
+        if (this.element.getAttribute(DATA_ITEM_CLASS) === POST_CLASS) {
+            this.url = URL_POST_VOTE;
+            this.payload_key = POST_CLASS;
+        } else {
+            this.url = URL_TOPIC_VOTE;
+            this.payload_key = TOPIC_CLASS;
+        }
     }
 
     vote(vote_type, method) {
@@ -55,14 +72,16 @@ export default class extends Controller {
         headers.set('Content-type', 'application/json');
         headers.set('X-CSRFToken', getCookie('csrftoken'));
 
-        const payload = JSON.stringify({post: Number.parseInt(this.post), vote_type: vote_type});
+        const payload = {vote_type: vote_type};
+        payload[this.payload_key] = Number.parseInt(this.item);
 
-        fetch(URL_POST_VOTE, {
+
+        fetch(this.url, {
             method: method,
-            body: payload,
+            body: JSON.stringify(payload),
             headers: headers
         }).then(r => {
-            console.log(r.text());
+            // console.log(r.text());
         });
     }
 

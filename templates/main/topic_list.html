@@ -8,11 +8,9 @@
     </div>
 
     {% for topic in topics %}
-        <p><a href="{{ topic.get_absolute_url }}">
-            {{ topic.title }}
-            <span class="d-block"><span class="text-info">+{{ topic.up_votes }}</span> <span
-                    class="text-danger">-{{ topic.down_votes }}</span> </span>
-        </a>
+        <p>
+            <a class="d-block" href="{{ topic.get_absolute_url }}">{{ topic.title }}</a>
+            {{ topic.post_count }} posts
         </p>
     {% endfor %}
 

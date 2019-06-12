@@ -5,32 +5,57 @@
     <div>
         <h2>{{ topic.title }}</h2>
         <p>
-            <a href="#"><strong class="d-block text-gray-dark">{{ topic.author }} {{ topic.how_long_ago }}
-                {% if topic.modified %}(modified){% endif %}</strong></a>
+            <span class="d-block"><a href="#"><strong
+                    class="text-gray-dark">{{ topic.author }} </strong></a>   {{ topic.how_long_ago }}
+                {% if topic.modified %}(modified){% endif %}</span>
             {{ topic.content }}
-            <span class="d-block"><span class="text-info">+{{ topic.likes }}</span> <span
-                    class="text-danger">-{{ topic.shares }}</span> </span>
+            {{ topic.post_count }}
+            {% if user.is_authenticated %}
+                <span class="d-block">
+                    <span class="text-info"
+                          data-action="click->post#like" data-controller="post"
+                          data-item-class="topic"
+                          data-item-votes="{{ topic.likes }}"
+                          data-item-checked="{% if topic.is_liked %}1{% else %}0{% endif %}"
+                          data-item="{{ topic.id }}">Like{% if topic.is_liked %}d{% endif %}({{ topic.likes }})
+                    </span>
+                    <span class="text-danger"
+                          data-action="click->post#share" data-controller="post"
+                          data-item-class="topic"
+                          data-item-votes="{{ topic.shares }}"
+                          data-item-checked="{% if topic.is_shared %}1{% else %}0{% endif %}"
+                          data-item="{{ topic.id }}">Share{% if topic.is_shared %}d{% endif %}({{ topic.shares }})
+                    </span>
+                </span>
+            {% else %}
+                <span class="d-block"><span class="text-info">Likes({{ topic.likes }})</span> <span
+                        class="text-danger">Shares({{ topic.shares }})</span>
+            </span>
+            {% endif %}
         </p>
     </div>
 
     {% for post in posts %}
         <p>
-            <a href="#"><strong class="d-block text-gray-dark">{{ post.author }} {{ post.how_long_ago }}
-                {% if post.modified %}(modified){% endif %}</strong></a>
+            <span class="d-block"><a href="#"><strong
+                    class="text-gray-dark">{{ post.author }}</strong></a>  {{ post.how_long_ago }}{% if post.modified %}
+                (modified){% endif %}</span>
             {{ post.content }}
             {% if user.is_authenticated %}
                 <span class="d-block">
                     <span class="text-info"
                           data-action="click->post#like" data-controller="post"
-                          data-post-votes="{{ post.likes }}"
-                          data-checked-state="{% if post.is_liked %}1{% else %}0{% endif %}"
-                          data-post="{{ post.id }}">Like{% if post.is_liked %}d{% endif %}({{ post.likes }})
+                          data-item-class="post"
+                          data-item-votes="{{ post.likes }}"
+                          data-item-checked="{% if post.is_liked %}1{% else %}0{% endif %}"
+                          data-item="{{ post.id }}">Like{% if post.is_liked %}d{% endif %}({{ post.likes }})
                     </span>
                     <span class="text-danger"
                           data-action="click->post#share" data-controller="post"
-                          data-post-votes="{{ post.shares }}"
-                          data-checked-state="{% if post.is_shared %}1{% else %}0{% endif %}"
-                          data-post="{{ post.id }}">Share{% if post.is_shared %}d{% endif %}({{ post.shares }})
+                          data-item-class="post"
+                          data-item-votes="{{ post.shares }}"
+                          data-item-checked="{% if post.is_shared %}1{% else %}0{% endif %}"
+                          data-item="{{ post.id }}">Share{% if post.is_shared %}d{% endif %}({{ post.shares }})
                     </span>
                 </span>
             {% else %}
