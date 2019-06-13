@@ -3,7 +3,7 @@ from django.urls import path, re_path
 
 from .forms import AuthenticationForm
 from .views import (SignupView, PostListView, TopicListView, HomeListView,
-                    PostVoteView, TopicVoteView)
+                    PostVoteView, TopicVoteView, PostCreateView)
 
 urlpatterns = [
     path('', HomeListView.as_view(), name='home'),
@@ -16,4 +16,5 @@ urlpatterns = [
             name='topic'),
     path('api-auth/post/vote/', PostVoteView.as_view(), name='post_vote'),
     path('api-auth/topic/vote/', TopicVoteView.as_view(), name='topic_vote'),
+    path('post/', PostCreateView.as_view(), name='post_create'),
 ]

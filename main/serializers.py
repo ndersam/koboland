@@ -19,3 +19,12 @@ class TopicVoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicVote
         fields = ('vote_type', 'topic', 'user')
+
+
+class PostSerializer(serializers.ModelSerializer):
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    topic = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all())
+
+    class Meta:
+        model = Post
+        fields = ('topic', 'author', 'content')

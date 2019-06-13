@@ -35,6 +35,13 @@
         </p>
     </div>
 
+    <form action="{% url 'post_create' %}" method="POST" data-controller="post-creator">
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">
+            Post
+        </button>
+    </form>
+
     {% for post in posts %}
         <p>
             <span class="d-block"><a href="#"><strong

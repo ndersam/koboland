@@ -2,16 +2,16 @@
 import logging
 
 from django.contrib.auth import authenticate, login
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .forms import UserCreationForm
-from .models import Topic, Board, PostVote, TopicVote
-from .serializers import PostVoteSerializer, TopicVoteSerializer
+from .forms import UserCreationForm, PostCreateForm
+from .models import Topic, Board, PostVote, TopicVote, Post
+from .serializers import PostVoteSerializer, TopicVoteSerializer, PostSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +67,10 @@ class PostListView(ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
         context['topic'] = self.topic
+        if self.request.user.is_authenticated:
+            form = PostCreateForm(initial={'topic': self.topic, 'redirect': self.topic.get_absolute_url()},
+                                  user=self.request.user)
+            context['form'] = form
         return context
 
 
@@ -140,3 +144,35 @@ class TopicVoteView(APIView):
     def delete(self, request, format=None):
         self.get_object(request.user, request.data['topic'], request.data['vote_type']).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PostCreateView(APIView):
+    queryset = Post.objects.all()
+
+    def post(self, request, format=None):
+        redirect = request.data.pop('redirect')
+        request.data['author'] = request.user.username
+        serializer = PostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return HttpResponseRedirect(redirect)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# class PostCreateView(LoginRequiredMixin, CreateView):
+#     template_name = 'main/post_create.html'
+#     model = Post
+#     queryset = Post.objects.all()
+#     fields = ['content', 'topic']
+#
+#     def get_form_kwargs(self):
+#         kwargs = super().get_form_kwargs()
+#         return kwargs
+#
+#     def form_valid(self, form):
+#         post: Post = form.save(commit=False)
+#         post.author = self.request.user
+#         post.save()
+#         return HttpResponseRedirect(self.get_success_url())
+#
+#     def get_success_url(self):
+#         return self.request.POST['redirect']
