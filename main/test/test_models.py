@@ -30,6 +30,11 @@ class TestModel(TestCase):
         self.assertEqual(post.likes, 1)
         self.assertEqual(user.post_votes.count(), 1)
 
+        vote.delete()
+        self.assertEqual(post.votes.count(), 0)
+        self.assertEqual(post.likes, 0)
+        self.assertEqual(user.post_votes.count(), 0)
+
     def test_post_shares_works_correctly(self):
         user = factories.UserFactory()
         board = factories.BoardFactory()
@@ -42,6 +47,11 @@ class TestModel(TestCase):
         self.assertEqual(post.shares, 1)
         self.assertEqual(user.post_votes.count(), 1)
 
+        vote.delete()
+        self.assertEqual(post.votes.count(), 0)
+        self.assertEqual(post.shares, 0)
+        self.assertEqual(user.post_votes.count(), 0)
+
     def test_topic_likes_works_correctly(self):
         user = factories.UserFactory()
         board = factories.BoardFactory()
@@ -52,6 +62,11 @@ class TestModel(TestCase):
         self.assertEqual(topic.votes.count(), 1)
         self.assertEqual(topic.likes, 1)
         self.assertEqual(user.topic_votes.count(), 1)
+
+        vote.delete()
+        self.assertEqual(topic.votes.count(), 0)
+        self.assertEqual(topic.likes, 0)
+        self.assertEqual(user.topic_votes.count(), 0)
 
     def test_topic_shares_works_correctly(self):
         user = factories.UserFactory()
@@ -64,9 +79,34 @@ class TestModel(TestCase):
         self.assertEqual(topic.shares, 1)
         self.assertEqual(user.topic_votes.count(), 1)
 
+        vote.delete()
+        self.assertEqual(topic.votes.count(), 0)
+        self.assertEqual(topic.shares, 0)
+        self.assertEqual(user.topic_votes.count(), 0)
+
+    def test_create_new_post_increases_topic_post_count(self):
+        user = factories.UserFactory()
+        board = factories.BoardFactory()
+        topic = factories.TopicFactory(board=board, author=user)
+
+        self.assertEqual(topic.post_count, 0)
+        factories.PostFactory(author=user, topic=topic)
+        self.assertEqual(topic.post_count, 1)
+
+    def test_delete_post_decreases_topic_post_count(self):
+        user = factories.UserFactory()
+        board = factories.BoardFactory()
+        topic = factories.TopicFactory(board=board, author=user)
+
+        self.assertEqual(topic.post_count, 0)
+        post = factories.PostFactory(author=user, topic=topic)
+        self.assertEqual(topic.post_count, 1)
+        post.delete()
+        self.assertEqual(topic.post_count, 0)
+
 
 # noinspection PyArgumentList
-class SubmissionTestCase(TestCase):
+class TestHowLongAgo(TestCase):
 
     def run_on_subclasses(func):
         classes = [Post, Topic]
