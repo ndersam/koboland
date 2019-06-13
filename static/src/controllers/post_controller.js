@@ -1,5 +1,6 @@
 import {Controller} from "stimulus";
 
+const Utils = require('../js/utils');
 const LIKE = 1;
 const SHARE = 2;
 
@@ -14,21 +15,6 @@ const URL_TOPIC_VOTE = '/api-auth/topic/vote/';
 const POST_CLASS = 'post';
 const TOPIC_CLASS = 'topic';
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        let cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            let cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
 
 function get_method(is_checked) {
     return is_checked ? 'DELETE' : 'POST';
@@ -70,7 +56,7 @@ export default class extends Controller {
     vote(vote_type, method) {
         const headers = new Headers();
         headers.set('Content-type', 'application/json');
-        headers.set('X-CSRFToken', getCookie('csrftoken'));
+        headers.set('X-CSRFToken', Utils.getCookie('csrftoken'));
 
         const payload = {vote_type: vote_type};
         payload[this.payload_key] = Number.parseInt(this.item);
