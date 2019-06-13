@@ -2,16 +2,11 @@
 import logging
 
 from django.contrib.auth import authenticate, login
-from django.http import Http404, HttpResponseRedirect
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from .forms import UserCreationForm, PostCreateForm
-from .models import Topic, Board, PostVote, TopicVote, Post
-from .serializers import PostVoteSerializer, TopicVoteSerializer, PostSerializer
+from .models import Topic, Board, PostVote, TopicVote
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +41,13 @@ class PostListView(ListView):
 
     def get_queryset(self):
         self.topic = Topic.objects.get(id=self.kwargs['topic_id'])
-        votes = self.topic.votes.filter(user=self.request.user)
-        for vote in votes:
-            if vote.vote_type == TopicVote.LIKE:
-                self.topic.is_liked = True
-            elif vote.vote_type == TopicVote.SHARE:
-                self.topic.is_shared = True
+        if self.request.user.is_authenticated:
+            votes = self.topic.votes.filter(user=self.request.user)
+            for vote in votes:
+                if vote.vote_type == TopicVote.LIKE:
+                    self.topic.is_liked = True
+                elif vote.vote_type == TopicVote.SHARE:
+                    self.topic.is_shared = True
 
         posts = self.topic.posts.all().prefetch_related('votes').order_by(*self.ordering)
         if self.request.user.is_authenticated:
@@ -98,65 +94,6 @@ class HomeListView(ListView):
 
     def get_queryset(self):
         return Topic.objects.order_by(*self.ordering)
-
-
-class PostVoteView(APIView):
-    queryset = PostVote.objects.all()
-
-    @staticmethod
-    def get_object(user, post_id, vote_type):
-        try:
-            return PostVote.objects.get(user=user, post_id=post_id, vote_type=vote_type)
-        except:
-            raise Http404
-
-    def post(self, request, format=None):
-        request.data['user'] = request.user.username
-        serializer = PostVoteSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, format=None):
-        self.get_object(request.user, request.data['post'], request.data['vote_type']).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class TopicVoteView(APIView):
-    queryset = TopicVote.objects.all()
-
-    @staticmethod
-    def get_object(user, topic_id, vote_type):
-        try:
-            return TopicVote.objects.get(user=user, topic_id=topic_id, vote_type=vote_type)
-        except:
-            raise Http404
-
-    def post(self, request, format=None):
-        request.data['user'] = request.user.username
-        serializer = TopicVoteSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, format=None):
-        self.get_object(request.user, request.data['topic'], request.data['vote_type']).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class PostCreateView(APIView):
-    queryset = Post.objects.all()
-
-    def post(self, request, format=None):
-        redirect = request.data.pop('redirect')
-        request.data['author'] = request.user.username
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return HttpResponseRedirect(redirect)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # class PostCreateView(LoginRequiredMixin, CreateView):
 #     template_name = 'main/post_create.html'

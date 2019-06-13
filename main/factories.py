@@ -12,6 +12,9 @@ class TopicFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Topic
 
+    title = 'This is a test title'
+    slug = 'this-is-a-test-title'
+
 
 class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -31,3 +34,5 @@ class PostVoteFactory(factory.django.DjangoModelFactory):
 class BoardFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Board
+
+    name = 'testBoard'

@@ -1,9 +1,9 @@
 from django.contrib.auth import views as auth_views
 from django.urls import path, re_path
 
+from .api import PostVoteView, PostCreateView, TopicVoteView
 from .forms import AuthenticationForm
-from .views import (SignupView, PostListView, TopicListView, HomeListView,
-                    PostVoteView, TopicVoteView, PostCreateView)
+from .views import (SignupView, PostListView, TopicListView, HomeListView, )
 
 urlpatterns = [
     path('', HomeListView.as_view(), name='home'),

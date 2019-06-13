@@ -4,15 +4,15 @@ from django.contrib import auth
 from django.test import TestCase
 from django.urls import reverse
 
-from main import forms, models
+from main import forms, models, factories
 
 
-class TestPage(TestCase):
+class TestAuthentication(TestCase):
 
     def test_user_signup_page_loads_correctly(self):
         response = self.client.get(reverse('signup'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'signup.html')
+        self.assertTemplateUsed(response, 'main/signup.html')
         self.assertContains(response, 'Koboland')
         self.assertIsInstance(response.context['form'], forms.UserCreationForm)
 
@@ -42,3 +42,22 @@ class TestPage(TestCase):
         })
         self.assertTrue(auth.get_user(self.client).is_authenticated)
         self.assertRedirects(response, reverse('home'))
+
+
+class TestTopicPage(TestCase):
+
+    def setUp(self) -> None:
+        user = factories.UserFactory(username='testUser')
+        board = factories.BoardFactory(name='testBoard')
+        self.topic = factories.TopicFactory(board=board, author=user, title='testTitle')
+        self.client.force_login(user)
+
+    def test_topic_page_loads_correctly(self):
+        resp = self.client.get(self.topic.get_absolute_url())
+        self.assertIsInstance(resp.context['form'], forms.PostCreateForm)
+        self.assertTemplateUsed(resp, 'main/post_list.html')
+
+    def test_no_form_displayed_when_user_logged_out(self):
+        self.client.logout()
+        resp = self.client.get(reverse('home'))
+        self.assertIsNone(resp.context.get('form'))

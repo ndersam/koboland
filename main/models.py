@@ -114,11 +114,15 @@ class Post(Submission):
         super().save(force_insert=force_insert, force_update=force_update, using=using,
                      update_fields=update_fields)
 
-    ## TODO ... fix this ... currently not working at all
+    # TODO ... fix this ... currently not working at all
     def delete(self, using=None, keep_parents=False):
         self.topic.post_count -= 1
         self.topic.save()
         super().delete(using, keep_parents)
+
+    # TODO ....
+    def get_absolute_url(self):
+        return self.topic.get_absolute_url()
 
 
 class SubmissionVote(models.Model):

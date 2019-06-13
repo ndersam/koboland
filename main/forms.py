@@ -7,7 +7,7 @@ from django.contrib.auth.forms import UsernameField, AuthenticationForm as Djang
 from django.core.mail import send_mail
 from django.utils.translation import ugettext_lazy as _
 
-from .models import User, Post, Topic
+from .models import User, Post
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +54,6 @@ class AuthenticationForm(DjangoAuthenticationForm):
 
 
 class PostCreateForm(forms.ModelForm):
-    redirect = forms.URLField(required=False, widget=forms.HiddenInput())
-
     class Meta:
         model = Post
         fields = ['content', 'topic']
@@ -66,12 +64,3 @@ class PostCreateForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
-
-    def clean_topic(self):
-        topic_id = self.cleaned_data['topic']
-        try:
-            Topic.objects.get(topic_id)
-        except Topic.DoesNotExist:
-            msg = f'{topic_id} does not exist'
-            raise forms.ValidationError(_(msg), code='invalid')
-        return topic_id
