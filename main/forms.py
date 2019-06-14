@@ -54,9 +54,13 @@ class AuthenticationForm(DjangoAuthenticationForm):
 
 
 class PostCreateForm(forms.ModelForm):
+    files = forms.FileField(label='Select a file to upload',
+                            widget=forms.ClearableFileInput(attrs={'multiple': True}),
+                            required=False)
+
     class Meta:
         model = Post
-        fields = ['content', 'topic']
+        fields = ['content', 'topic', 'files']
         widgets = {
             'topic': forms.HiddenInput(),
         }

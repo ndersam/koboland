@@ -15,20 +15,14 @@ export default class extends Controller {
             event.preventDefault();
 
             // Retrieve data from form
-            const data = {};
-            const children = this.querySelectorAll('textarea, input');
-            for (let idx = 0; idx < children.length; idx++) {
-                let child = children.item(idx);
-                data[child.name] = child.value;
-            }
+            const formData = new FormData(this);
 
             // AJAX request
             const headers = new Headers();
-            headers.set('Content-type', 'application/json');
             headers.set('X-CSRFToken', Utils.getCookie('csrftoken'));
             fetch(POST_URL, {
                 method: 'POST',
-                body: JSON.stringify(data),
+                body: formData,
                 headers: headers
             }).then(r => {
                 return r.text();

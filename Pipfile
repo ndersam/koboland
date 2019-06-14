@@ -6,17 +6,19 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-django = "*"
-psycopg2 = "*"
-factory-boy = "*"
-djangorestframework = "*"
-django-filter = "*"
-selenium = "*"
-mistune = "*"
-cython = "*"
-django-fernet-fields = "*"
 cryptography = "*"
+cython = "*"
+django = "*"
+django-fernet-fields = "*"
+django-filter = "*"
+djangorestframework = "*"
+factory-boy = "*"
+mistune = "*"
+psycopg2 = "*"
+selenium = "*"
+python-magic = "*"
+pillow = "*"
+django-widget-tweaks = "*"
 
 [requires]
 python_version = "3.7"
-p

@@ -1,3 +1,5 @@
+import os
+import uuid
 from datetime import timedelta
 
 import mistune
@@ -39,12 +41,23 @@ class Board(models.Model):
         return reverse('board', kwargs={'board': self.name})
 
 
+def get_file_path(instance, filename):
+    ext = filename.split('.')[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    return os.path.join('uploads/images', filename)
+
+
+class SubmissionMedia(models.Model):
+    file = models.ImageField(upload_to=get_file_path)
+
+
 class Submission(models.Model):
     content = models.TextField(blank=True)
     content_html = models.TextField(blank=True)
     modified = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
     pseudoid = models.CharField(default='', max_length=12, unique=True, editable=False)
+    files = models.ManyToManyField('SubmissionMedia')
 
     likes = models.IntegerField(default=0)
     shares = models.IntegerField(default=0)

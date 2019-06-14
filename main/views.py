@@ -40,7 +40,7 @@ class PostListView(ListView):
     ordering = ['-date_created']
 
     def get_queryset(self):
-        self.topic = Topic.objects.get(id=self.kwargs['topic_id'])
+        self.topic = Topic.objects.filter(id=self.kwargs['topic_id']).prefetch_related('files').first()
         if self.request.user.is_authenticated:
             votes = self.topic.votes.filter(user=self.request.user)
             for vote in votes:
@@ -49,7 +49,7 @@ class PostListView(ListView):
                 elif vote.vote_type == TopicVote.SHARE:
                     self.topic.is_shared = True
 
-        posts = self.topic.posts.all().prefetch_related('votes').order_by(*self.ordering)
+        posts = self.topic.posts.all().prefetch_related('votes', 'files').order_by(*self.ordering)
         if self.request.user.is_authenticated:
             for post in posts:
                 votes = post.votes.filter(user=self.request.user)

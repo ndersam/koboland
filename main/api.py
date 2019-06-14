@@ -1,13 +1,19 @@
 # Create your views here.
-
 from django.http import Http404, HttpResponseRedirect
 from rest_framework import status
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import PostVote, TopicVote, Post
 from .serializers import PostVoteSerializer, TopicVoteSerializer, PostSerializer
+
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+
+    def enforce_csrf(self, request):
+        return
 
 
 class PostVoteView(APIView):
@@ -63,9 +69,14 @@ class PostCreateView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request, format=None):
-        request.data['author'] = request.user.username
-        serializer = PostSerializer(data=request.data)
+        data = request.POST.copy()
+        data['author'] = request.user.username
+        serializer = PostSerializer(data=data)
         if serializer.is_valid():
             post = serializer.save()
+
+            files = request.FILES.getlist('files')
+            for file in files:
+                post.files.create(file=file)
             return HttpResponseRedirect(post.get_absolute_url())
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

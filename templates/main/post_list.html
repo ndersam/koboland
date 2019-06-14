@@ -36,8 +36,14 @@
     </div>
 
     {% if user.is_authenticated %}
-        <form action="{% url 'post_create' %}" method="POST" data-controller="post-creator">
-            {{ form.as_p }}
+        <form action="{% url 'post_create' %}" method="POST" data-controller="post-creator"
+              enctype="multipart/form-data">
+            {{ form.non_field_errors }}
+            {% for field in form.hidden_fields %}
+                {{ field }}
+            {% endfor %}
+            {% include "includes/form_field.html" with field=form.content %}
+            {% include "includes/form_field.html" with field=form.files %}
             <button type="submit" class="btn btn-primary">
                 Post
             </button>
@@ -51,6 +57,9 @@
                     class="text-gray-dark">{{ post.author }}</strong></a>  {{ post.how_long_ago }}{% if post.modified %}
                 (modified){% endif %}</span>
             {{ post.content_html|safe }}
+            {% for file in post.files.all %}
+                <img src="{{ file.file.url }}" alt="post-image" class="img-fluid"/>
+            {% endfor %}
             {% if user.is_authenticated %}
                 <span class="d-block">
                     <span class="text-info"

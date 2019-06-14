@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.urls import path, re_path
 
@@ -18,3 +20,6 @@ urlpatterns = [
     path('api-auth/topic/vote/', TopicVoteView.as_view(), name='topic_vote'),
     path('post/', PostCreateView.as_view(), name='post_create'),
 ]
+
+if settings.DEBUG:  # new
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,8 +1,10 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 
 from main import models, factories
+from main.utils import create_image
 
 
 class TestVoteAPI(TestCase):
@@ -96,12 +98,12 @@ class TestPostCreateAPI(TestCase):
         self.topic = factories.TopicFactory(board=board, author=self.user, title='testTitle')
         self.client.force_login(self.user)
 
-    def test_create_post_works(self):
+    def test_create_post_works_without_file(self):
         content = 'This is my content.'
         resp = self.client.post(reverse('post_create'), data={
             'topic': self.topic.id,
             'content': content,
-        }, content_type='application/json')
+        })
         self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
         self.assertEquals(self.topic.post_count, 0)
         self.topic.refresh_from_db()
@@ -109,3 +111,50 @@ class TestPostCreateAPI(TestCase):
         self.assertEquals(self.topic.post_count, 1)
         self.assertEquals(self.topic.posts.count(), 1)
         self.assertEquals(self.user.posts.count(), 1)
+
+    def test_create_post_works_with_one_file(self):
+        content = 'This is my content.'
+        file = SimpleUploadedFile('in1.jpg', create_image(None, "main/sample_data/images/in1.jpg").getvalue())
+        resp = self.client.post(reverse('post_create'), {
+            'topic': self.topic.id,
+            'content': content,
+            'files': [file]
+        })
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        self.assertEquals(self.topic.post_count, 0)
+        self.topic.refresh_from_db()
+        self.user.refresh_from_db()
+        self.assertEquals(self.topic.post_count, 1)
+        self.assertEquals(self.topic.posts.count(), 1)
+        self.assertEquals(self.user.posts.count(), 1)
+
+        files = self.topic.posts.first().files.all()
+        self.assertEquals(len(files), 1)
+        for file in files:
+            file.file.delete(save=False)
+
+    def test_create_post_works_with_multiple_files(self):
+        content = 'This is my content.'
+        files = []
+        for file in ['in1.jpg', 'in2.jpg']:
+            files.append(
+                SimpleUploadedFile(file,
+                                   create_image(None, f"main/sample_data/images/{file}").getvalue())
+            )
+        resp = self.client.post(reverse('post_create'), {
+            'topic': self.topic.id,
+            'content': content,
+            'files': files
+        })
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        self.assertEquals(self.topic.post_count, 0)
+        self.topic.refresh_from_db()
+        self.user.refresh_from_db()
+        self.assertEquals(self.topic.post_count, 1)
+        self.assertEquals(self.topic.posts.count(), 1)
+        self.assertEquals(self.user.posts.count(), 1)
+
+        files = self.topic.posts.first().files.all()
+        self.assertEquals(len(files), 2)
+        for file in files:
+            file.file.delete(save=False)
