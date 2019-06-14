@@ -36,14 +36,14 @@ class FileValidator(object):
             raise ValidationError(self.error_messages['min_size'],
                                   'min_size', params)
 
+        content_type = magic.from_buffer(data.read(), mime=True)
+        data.seek(0)
         if self.content_types:
-            content_type = magic.from_buffer(data.read(), mime=True)
-            data.seek(0)
-
             if content_type not in self.content_types:
                 params = {'content_type': content_type}
                 raise ValidationError(self.error_messages['content_type'],
                                       'content_type', params)
+        return {'content_type': content_type}
 
     def __eq__(self, other):
         return (

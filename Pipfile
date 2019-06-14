@@ -16,9 +16,9 @@ factory-boy = "*"
 mistune = "*"
 psycopg2 = "*"
 selenium = "*"
-python-magic = "*"
 pillow = "*"
 django-widget-tweaks = "*"
+python-magic-bin = "*"
 
 [requires]
 python_version = "3.7"

@@ -1,4 +1,6 @@
 # Create your views here.
+from django.conf import settings
+from django.core.validators import ValidationError
 from django.http import Http404, HttpResponseRedirect
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
@@ -6,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from main.validators import FileValidator
 from .models import PostVote, TopicVote, Post
 from .serializers import PostVoteSerializer, TopicVoteSerializer, PostSerializer
 
@@ -65,6 +68,7 @@ class TopicVoteView(APIView):
 
 
 class PostCreateView(APIView):
+    validate_file = FileValidator(content_types=(getattr(settings, 'SUBMISSION_MEDIA_TYPES', '')))
     queryset = Post.objects.all()
     permission_classes = (IsAuthenticated,)
 
@@ -73,10 +77,22 @@ class PostCreateView(APIView):
         data['author'] = request.user.username
         serializer = PostSerializer(data=data)
         if serializer.is_valid():
-            post = serializer.save()
-
             files = request.FILES.getlist('files')
+            content_types = []
+
+            errors = []
             for file in files:
-                post.files.create(file=file)
+                try:
+                    # returns a dict containing content_type
+                    meta = self.validate_file(file)
+                    content_types.append(meta['content_type'])
+                except ValidationError as e:
+                    errors += e.messages
+            if len(errors) > 0:
+                return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            post = serializer.save()
+            for file, content_type in zip(files, content_types):
+                post.files.create(file=file, content_type=content_type)
             return HttpResponseRedirect(post.get_absolute_url())
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

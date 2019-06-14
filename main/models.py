@@ -48,7 +48,9 @@ def get_file_path(instance, filename):
 
 
 class SubmissionMedia(models.Model):
-    file = models.ImageField(upload_to=get_file_path)
+    # validate_file = FileValidator(content_types=(getattr(settings, 'SUBMISSION_MEDIA_TYPES', '')))
+    file = models.FileField(upload_to=get_file_path)
+    content_type = models.CharField(max_length=20)
 
 
 class Submission(models.Model):

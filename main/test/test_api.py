@@ -158,3 +158,20 @@ class TestPostCreateAPI(TestCase):
         self.assertEquals(len(files), 2)
         for file in files:
             file.file.delete(save=False)
+
+    def test_create_post_with_file_with_unsupported_file_format_returns_400(self):
+        content = 'This is my content.'
+
+        file = SimpleUploadedFile('front.png', b'this is some text - not an image')
+        resp = self.client.post(reverse('post_create'), {
+            'topic': self.topic.id,
+            'content': content,
+            'files': [file]
+        })
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.topic.post_count, 0)
+        self.topic.refresh_from_db()
+        self.user.refresh_from_db()
+        self.assertEquals(self.topic.post_count, 0)
+        self.assertEquals(self.topic.posts.count(), 0)
+        self.assertEquals(self.user.posts.count(), 0)

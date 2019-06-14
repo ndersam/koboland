@@ -144,3 +144,11 @@ REST_FRAMEWORK = {
         'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 100
 }
+
+SUBMISSION_MEDIA_TYPES = [
+    'video/mpeg', 'video/ogg',
+    'video/webm', 'image/gif',
+    'image/jpeg', 'image/png',
+    'image/svg+xml', 'image/tiff',
+    'image/webp', 'image/bmp'
+]
