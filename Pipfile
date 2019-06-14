@@ -12,6 +12,11 @@ factory-boy = "*"
 djangorestframework = "*"
 django-filter = "*"
 selenium = "*"
+mistune = "*"
+cython = "*"
+django-fernet-fields = "*"
+cryptography = "*"
 
 [requires]
 python_version = "3.7"
+p

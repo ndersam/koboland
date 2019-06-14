@@ -1,11 +1,14 @@
 from datetime import timedelta
 
+import mistune
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.db import IntegrityError
 from django.db import models
 from django.template.defaultfilters import pluralize
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.crypto import get_random_string
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
@@ -41,6 +44,7 @@ class Submission(models.Model):
     content_html = models.TextField(blank=True)
     modified = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
+    pseudoid = models.CharField(default='', max_length=12, unique=True, editable=False)
 
     likes = models.IntegerField(default=0)
     shares = models.IntegerField(default=0)
@@ -60,6 +64,30 @@ class Submission(models.Model):
             hours = how_long.seconds // 3600
             return f'{hours} hour{pluralize(hours)} ago'
         return f'{how_long.days} day{pluralize(how_long.days)} ago'
+
+    # TODO --> Use a `Renderer class` so as to simply testing
+    def generate_html(self):
+        return mistune.markdown(self.content)
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        self.content_html = self.generate_html()
+
+        if len(self.pseudoid) == 0:
+            self.pseudoid = get_random_string()
+        success = False
+        failures = 0
+        while not success:
+            try:
+                super().save(force_insert, force_update, using, update_fields)
+            except IntegrityError as e:
+                failures += 1
+                if failures > 5:
+                    raise e
+                else:
+                    self.pseudoid = get_random_string()
+            else:
+                success = True
 
 
 class Topic(Submission):

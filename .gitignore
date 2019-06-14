@@ -151,3 +151,5 @@ crashlytics-build.properties
 fabric.properties
 
 static/node_modules/
+
+media/

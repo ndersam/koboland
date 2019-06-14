@@ -8,8 +8,8 @@
             <span class="d-block"><a href="#"><strong
                     class="text-gray-dark">{{ topic.author }} </strong></a>   {{ topic.how_long_ago }}
                 {% if topic.modified %}(modified){% endif %}</span>
-            {{ topic.content }}
-            {{ topic.post_count }}
+            {{ topic.content_html|safe }}
+            <span class="d-block">{{ topic.post_count }} comments</span>
             {% if user.is_authenticated %}
                 <span class="d-block">
                     <span class="text-info"
@@ -50,7 +50,7 @@
             <span class="d-block"><a href="#"><strong
                     class="text-gray-dark">{{ post.author }}</strong></a>  {{ post.how_long_ago }}{% if post.modified %}
                 (modified){% endif %}</span>
-            {{ post.content }}
+            {{ post.content_html|safe }}
             {% if user.is_authenticated %}
                 <span class="d-block">
                     <span class="text-info"
