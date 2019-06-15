@@ -1,6 +1,7 @@
 # Create your views here.
 import logging
 
+from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -130,10 +131,9 @@ class TopicCreateView(LoginRequiredMixin, CreateView):
 
 def logout_view(request):
     logout(request)
-    # messages.info(
-    #     request, "You've logged out successfully."
-    # )
+    messages.info(
+        request, "You've logged out successfully."
+    )
     redirect = reverse('home')
     resp = HttpResponseRedirect(redirect)
-    # resp['Turbolinks-Location'] = redirect
     return resp
