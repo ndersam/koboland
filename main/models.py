@@ -36,7 +36,7 @@ class Board(models.Model):
         return self.name
 
     def follower_count(self):
-        return self.followers().count()
+        return self.followers.count()
 
     def get_absolute_url(self):
         return reverse('board', kwargs={'board': self.name})
@@ -66,6 +66,7 @@ class Submission(models.Model):
     files = models.ManyToManyField('SubmissionMedia')
 
     likes = models.IntegerField(default=0)
+    dislikes = models.IntegerField(default=0)
     shares = models.IntegerField(default=0)
     score = models.IntegerField(default=0)
 

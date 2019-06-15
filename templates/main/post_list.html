@@ -8,6 +8,7 @@
             <span class="d-block"><a href="#"><strong
                     class="text-gray-dark">{{ topic.author }} </strong></a>   {{ topic.how_long_ago }}
                 {% if topic.modified %}(modified){% endif %}</span>
+        <div class="uc">
             {{ topic.content_html|safe }}
             {% for file in topic.files.all %}
                 {% if file.is_image %}
@@ -19,9 +20,12 @@
                     </video>
                 {% endif %}
             {% endfor %}
-            <span class="d-block">{{ topic.post_count }} comments</span>
-            {% if user.is_authenticated %}
-                <span class="d-block">
+
+        </div>
+
+        <span class="d-block">{{ topic.post_count }} comments</span>
+        {% if user.is_authenticated %}
+            <span class="d-block">
                     <span class="text-info"
                           data-action="click->post#like" data-controller="post"
                           data-item-class="topic"
@@ -37,11 +41,11 @@
                           data-item="{{ topic.id }}">Share{% if topic.is_shared %}d{% endif %}({{ topic.shares }})
                     </span>
                 </span>
-            {% else %}
-                <span class="d-block"><span class="text-info">Likes({{ topic.likes }})</span> <span
-                        class="text-danger">Shares({{ topic.shares }})</span>
+        {% else %}
+            <span class="d-block"><span class="text-info">Likes({{ topic.likes }})</span> <span
+                    class="text-danger">Shares({{ topic.shares }})</span>
             </span>
-            {% endif %}
+        {% endif %}
         </p>
     </div>
 
@@ -67,6 +71,7 @@
             <span class="d-block"><a href="#"><strong
                     class="text-gray-dark">{{ post.author }}</strong></a>  {{ post.how_long_ago }}{% if post.modified %}
                 (modified){% endif %}</span>
+        <div class="uc">
             {{ post.content_html|safe }}
             {% for file in post.files.all %}
                 {% if file.is_image %}
@@ -78,8 +83,9 @@
                     </video>
                 {% endif %}
             {% endfor %}
-            {% if user.is_authenticated %}
-                <span class="d-block">
+        </div>
+        {% if user.is_authenticated %}
+            <span class="d-block">
                     <span class="text-info"
                           data-action="click->post#like" data-controller="post"
                           data-item-class="post"
@@ -95,11 +101,11 @@
                           data-item="{{ post.id }}">Share{% if post.is_shared %}d{% endif %}({{ post.shares }})
                     </span>
                 </span>
-            {% else %}
-                <span class="d-block"><span class="text-info">Likes({{ post.likes }})</span> <span
-                        class="text-danger">Shares({{ post.shares }})</span>
+        {% else %}
+            <span class="d-block"><span class="text-info">Likes({{ post.likes }})</span> <span
+                    class="text-danger">Shares({{ post.shares }})</span>
             </span>
-            {% endif %}
+        {% endif %}
         </p>
     {% endfor %}
 

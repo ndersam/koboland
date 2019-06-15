@@ -19,6 +19,8 @@ selenium = "*"
 pillow = "*"
 django-widget-tweaks = "*"
 python-magic-bin = "*"
+markdown = "*"
+pymdown-extensions = "*"
 
 [requires]
 python_version = "3.7"

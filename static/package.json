@@ -5,13 +5,16 @@
   "main": "dist/js/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:js": "npx webpack --config webpack.config.js"
+    "build:js": "npx webpack --config webpack.config.js",
+    "build:css": "postcss src/pcss/styles.pcss -o dist/css/styles.css"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "enzyme": "^3.10.0",
     "jest": "^24.8.0",
+    "postcss": "^7.0.17",
+    "postcss-cli": "^6.1.2",
     "tailwindcss": "^1.0.3",
     "webpack": "^4.33.0",
     "webpack-cli": "^3.3.3"
