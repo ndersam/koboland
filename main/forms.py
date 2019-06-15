@@ -7,7 +7,7 @@ from django.contrib.auth.forms import UsernameField, AuthenticationForm as Djang
 from django.core.mail import send_mail
 from django.utils.translation import ugettext_lazy as _
 
-from .models import User, Post
+from .models import User, Post, Topic
 
 logger = logging.getLogger(__name__)
 
@@ -67,4 +67,18 @@ class PostCreateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
+
+
+class TopicCreateForm(forms.ModelForm):
+    files = forms.FileField(label='Select a file to upload',
+                            widget=forms.ClearableFileInput(attrs={'multiple': True}),
+                            required=False)
+
+    class Meta:
+        model = Topic
+        fields = ['content', 'board', 'files', 'title']
+
+    def __init__(self, *args, **kwargs):
+        self.author = kwargs.pop('author')
         super().__init__(*args, **kwargs)

@@ -117,12 +117,6 @@ class Topic(Submission):
 
     post_count = models.IntegerField(default=0)
 
-    def set_vote(self, user, up_vote=True):
-        TopicVote.objects.get_or_create(topic=self, user=user, is_up_vote=up_vote)
-
-    def remove_vote(self, user):
-        self.votes.filter(id=user.id).delete()
-
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         value = self.title

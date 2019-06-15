@@ -18,7 +18,7 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
         return
 
 
-class PostVoteView(APIView):
+class PostVoteAPI(APIView):
     queryset = PostVote.objects.all()
 
     permission_classes = (IsAuthenticated,)
@@ -43,7 +43,7 @@ class PostVoteView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TopicVoteView(APIView):
+class TopicVoteAPI(APIView):
     queryset = TopicVote.objects.all()
 
     @staticmethod
@@ -66,7 +66,7 @@ class TopicVoteView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class PostCreateView(APIView):
+class PostCreateAPI(APIView):
     file_validator = FileValidator(content_types=(getattr(settings, 'SUBMISSION_MEDIA_TYPES', '')))
     queryset = Post.objects.all()
     permission_classes = (IsAuthenticated,)
@@ -119,7 +119,7 @@ class PostCreateView(APIView):
         return PostSerializer(data=data)
 
 
-class TopicCreateView(PostCreateView):
+class TopicCreateAPI(PostCreateAPI):
     queryset = Topic.objects.all()
     permission_classes = (IsAuthenticated,)
 

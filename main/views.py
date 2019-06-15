@@ -2,10 +2,12 @@
 import logging
 
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
-from .forms import UserCreationForm, PostCreateForm
+from .forms import UserCreationForm, PostCreateForm, TopicCreateForm
 from .models import Topic, Board, PostVote, TopicVote
 
 logger = logging.getLogger(__name__)
@@ -95,21 +97,29 @@ class HomeListView(ListView):
     def get_queryset(self):
         return Topic.objects.order_by(*self.ordering)
 
-# class PostCreateView(LoginRequiredMixin, CreateView):
-#     template_name = 'main/post_create.html'
-#     model = Post
-#     queryset = Post.objects.all()
-#     fields = ['content', 'topic']
-#
-#     def get_form_kwargs(self):
-#         kwargs = super().get_form_kwargs()
-#         return kwargs
-#
-#     def form_valid(self, form):
-#         post: Post = form.save(commit=False)
-#         post.author = self.request.user
-#         post.save()
-#         return HttpResponseRedirect(self.get_success_url())
-#
-#     def get_success_url(self):
-#         return self.request.POST['redirect']
+
+class TopicCreateView(LoginRequiredMixin, CreateView):
+    template_name = 'main/topic_create.html'
+    model = Topic
+    queryset = Topic.objects.all()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['author'] = self.request.user
+        if self.request.GET:
+            board_name = self.request.GET.get('q', '')
+            try:
+                Board.objects.get(name=board_name)
+                kwargs['board'] = board_name
+            except Board.DoesNotExist:
+                pass
+        return kwargs
+
+    def get_form(self, form_class=None):
+        kwargs = self.get_form_kwargs()
+        initial_board = kwargs.pop('board') if kwargs.get('board') else None
+        form = TopicCreateForm(**kwargs)
+        # TODO .... Fix this .. wrong capitalization fucks this
+        if initial_board:
+            form.fields['board'].initial = initial_board
+        return form
