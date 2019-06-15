@@ -25,19 +25,31 @@
             <div class="collapse navbar-collapse"
                  id="navbarSupportedContent">
                 <ul class="navbar-nav mr-auto">
+                    {% url 'login' as login_url %}
+                    {% url 'signup' as signup_url %}
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link" href="#">{{ user.username }}</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                            <a class="nav-link" href="
+
+                                    {% url 'logout' %}{% if request.path  != signup_url and request.path != login_url %}?next={{ request.path }}{% endif %}">Logout</a>
                         </li>
                     {% else %}
-                        <li class="nav-item {% if request.path == "/login/" %}active{% endif %}">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        <li class="nav-item {% if request.path == login_url %}active{% endif %}">
+                            <a class="nav-link"
+                               href="
+
+                                       {% url 'login' %}{% if request.path != login_url and request.path != signup_url %}?next={{ request.path }}{% endif %}">Login</a>
                         </li>
-                        <li class="nav-item {% if request.path == "/signup/" %}active{% endif %}">
-                            <a class="nav-link" href="{% url 'signup' %}">Sign up</a>
+                        <li class="nav-item {% if request.path == signup_url %}active{% endif %}">
+                            <a class="nav-link" href="
+
+
+
+                                    {% url 'signup' %}{% if request.path != login_url and request.path != signup_url %}?next={{ request.path }}{% endif %}">Sign
+                                up</a>
                         </li>
                     {% endif %}
 
