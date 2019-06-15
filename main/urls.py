@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.urls import path, re_path
 
-from .api import PostVoteView, PostCreateView, TopicVoteView
+from .api import PostVoteView, PostCreateView, TopicVoteView, TopicCreateView
 from .forms import AuthenticationForm
 from .views import (SignupView, PostListView, TopicListView, HomeListView, )
 
@@ -18,7 +18,8 @@ urlpatterns = [
             name='topic'),
     path('api-auth/post/vote/', PostVoteView.as_view(), name='post_vote'),
     path('api-auth/topic/vote/', TopicVoteView.as_view(), name='topic_vote'),
-    path('post/', PostCreateView.as_view(), name='post_create'),
+    path('api-auth/submit/post/', PostCreateView.as_view(), name='post_create'),
+    path('api-auth/submit/topic/', TopicCreateView.as_view(), name='topic_create'),
 ]
 
 if settings.DEBUG:  # new

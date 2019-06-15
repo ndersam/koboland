@@ -9,6 +9,16 @@
                     class="text-gray-dark">{{ topic.author }} </strong></a>   {{ topic.how_long_ago }}
                 {% if topic.modified %}(modified){% endif %}</span>
             {{ topic.content_html|safe }}
+            {% for file in topic.files.all %}
+                {% if file.is_image %}
+                    <img src="{{ file.file.url }}" alt="post-image" class="img-fluid"/>
+                {% else %}
+                    <video class="img-fluid" controls>
+                        <source src="{{ file.file.url }}" type="{{ file.content_type }}">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
+            {% endfor %}
             <span class="d-block">{{ topic.post_count }} comments</span>
             {% if user.is_authenticated %}
                 <span class="d-block">
@@ -38,6 +48,7 @@
     {% if user.is_authenticated %}
         <form action="{% url 'post_create' %}" method="POST" data-controller="post-creator"
               enctype="multipart/form-data">
+            {% csrf_token %}
             {{ form.non_field_errors }}
             {% for field in form.hidden_fields %}
                 {{ field }}
@@ -58,7 +69,14 @@
                 (modified){% endif %}</span>
             {{ post.content_html|safe }}
             {% for file in post.files.all %}
-                <img src="{{ file.file.url }}" alt="post-image" class="img-fluid"/>
+                {% if file.is_image %}
+                    <img src="{{ file.file.url }}" alt="post-image" class="img-fluid"/>
+                {% else %}
+                    <video class="img-fluid" controls>
+                        <source src="{{ file.file.url }}" type="{{ file.content_type }}">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endif %}
             {% endfor %}
             {% if user.is_authenticated %}
                 <span class="d-block">

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from main.models import PostVote, User, Post, TopicVote, Topic
+from main.models import PostVote, User, Post, TopicVote, Topic, Board
 
 
 class PostVoteSerializer(serializers.ModelSerializer):
@@ -28,3 +28,12 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ('topic', 'author', 'content')
+
+
+class TopicSerializer(serializers.ModelSerializer):
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    board = serializers.PrimaryKeyRelatedField(queryset=Board.objects.all())
+
+    class Meta:
+        model = Topic
+        fields = ('board', 'author', 'content', 'title')

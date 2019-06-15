@@ -5,6 +5,7 @@ from datetime import timedelta
 import mistune
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.core.validators import MinLengthValidator
 from django.db import IntegrityError
 from django.db import models
 from django.template.defaultfilters import pluralize
@@ -44,13 +45,16 @@ class Board(models.Model):
 def get_file_path(instance, filename):
     ext = filename.split('.')[-1]
     filename = f"{uuid.uuid4()}.{ext}"
-    return os.path.join('uploads/images', filename)
+    return os.path.join('user_content', filename)
 
 
 class SubmissionMedia(models.Model):
     # validate_file = FileValidator(content_types=(getattr(settings, 'SUBMISSION_MEDIA_TYPES', '')))
     file = models.FileField(upload_to=get_file_path)
     content_type = models.CharField(max_length=20)
+
+    def is_image(self):
+        return self.content_type.startswith('image')
 
 
 class Submission(models.Model):
@@ -106,7 +110,7 @@ class Submission(models.Model):
 
 
 class Topic(Submission):
-    title = models.CharField(max_length=80)
+    title = models.CharField(max_length=80, validators=[MinLengthValidator(1)])
     slug = models.SlugField(max_length=48)
     author = models.ForeignKey('User', related_name='topics', on_delete=models.SET_NULL, null=True)
     board = models.ForeignKey('Board', related_name='topics', on_delete=models.CASCADE)

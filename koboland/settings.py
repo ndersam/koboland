@@ -146,6 +146,7 @@ REST_FRAMEWORK = {
 }
 
 SUBMISSION_MEDIA_TYPES = [
+    'video/mp4',
     'video/mpeg', 'video/ogg',
     'video/webm', 'image/gif',
     'image/jpeg', 'image/png',
