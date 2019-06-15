@@ -5,14 +5,15 @@ from django.urls import path, re_path
 
 from .api import PostVoteAPI, PostCreateAPI, TopicVoteAPI, TopicCreateAPI
 from .forms import AuthenticationForm
-from .views import (SignupView, PostListView, TopicListView, HomeListView, TopicCreateView)
+from .views import (SignupView, PostListView, TopicListView, HomeListView,
+                    TopicCreateView, logout_view)
 
 urlpatterns = [
     path('', HomeListView.as_view(), name='home'),
     path('signup/', SignupView.as_view(), name='signup'),
     path('login/', auth_views.LoginView.as_view(template_name='main/login.html', form_class=AuthenticationForm),
          name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', logout_view, name='logout'),
     re_path(r'~(?P<board>[A-Za-z0-9-_]+)/$', TopicListView.as_view(), name='board'),
     re_path(r'~(?P<board>[A-Za-z0-9-_]+)/(?P<topic_id>\d+)/(?P<topic_slug>[A-Za-z0-9-_]+)/$', PostListView.as_view(),
             name='topic'),

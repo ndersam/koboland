@@ -2,7 +2,10 @@
 import logging
 
 from django.contrib.auth import authenticate, login
+from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
@@ -123,3 +126,14 @@ class TopicCreateView(LoginRequiredMixin, CreateView):
         if initial_board:
             form.fields['board'].initial = initial_board
         return form
+
+
+def logout_view(request):
+    logout(request)
+    # messages.info(
+    #     request, "You've logged out successfully."
+    # )
+    redirect = reverse('home')
+    resp = HttpResponseRedirect(redirect)
+    # resp['Turbolinks-Location'] = redirect
+    return resp
