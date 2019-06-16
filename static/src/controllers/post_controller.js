@@ -4,7 +4,8 @@ const Utils = require('../js/utils');
 const LIKE = 1;
 const DISLIKE = -1;
 const NO_VOTE = 0;
-const SHARE = 10;
+const SHARE = 2;
+const UNSHARE = -2;
 const URL = '/api-auth/vote/';
 
 const DATA_ITEM_CLASS = 'data-item-class';
@@ -48,19 +49,13 @@ export default class extends Controller {
 
     connect() {
         if (this.element.getAttribute(DATA_ITEM_CLASS) === POST_CLASS) {
-            this.url = URL_POST_VOTE;
             this.payload_key = POST_CLASS;
         } else {
-            this.url = URL_TOPIC_VOTE;
             this.payload_key = TOPIC_CLASS;
         }
     }
 
-    vote(vote_type = null, is_shared = null) {
-
-        if (vote_type == null && is_shared == null) {
-            return;
-        }
+    vote(vote_type) {
 
         const headers = new Headers();
         headers.set('Content-type', 'application/json');
@@ -69,12 +64,8 @@ export default class extends Controller {
         const payload = {};
         payload['votable_id'] = Number.parseInt(this.item);
         payload['votable_type'] = this.payload_key;
-        if (vote_type != null) {
-            payload['vote_type'] = vote_type;
-        }
-        if (is_shared != null) {
-            payload['is_shared'] = is_shared;
-        }
+        payload['vote_type'] = vote_type;
+
 
         fetch(URL, {
             method: 'POST',
@@ -97,8 +88,20 @@ export default class extends Controller {
         this.checked = !this.checked;
     }
 
+    dislike() {
+        this.vote(this.checked ? NO_VOTE : DISLIKE);
+        if (this.checked) {
+            this.votes--;
+            this.element.innerHTML = `Dislike(${this.votes})`;
+        } else {
+            this.votes++;
+            this.element.innerHTML = `Disliked(${this.votes})`;
+        }
+        this.checked = !this.checked;
+    }
+
     share() {
-        this.vote(null, !this.checked);
+        this.vote(this.checked ? UNSHARE : SHARE);
 
         if (this.checked) {
             this.votes--;

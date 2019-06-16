@@ -21,16 +21,11 @@ class PostFactory(factory.django.DjangoModelFactory):
         model = models.Post
 
 
-class TopicVoteFactory(factory.django.DjangoModelFactory):
+class VoteFactory(factory.django.DjangoModelFactory):
     pass
-    # class Meta:
-    #     model = models.TopicVote
 
-
-class PostVoteFactory(factory.django.DjangoModelFactory):
-    pass
-    # class Meta:
-    #     model = models.PostVote
+    class Meta:
+        model = models.Vote
 
 
 class BoardFactory(factory.django.DjangoModelFactory):

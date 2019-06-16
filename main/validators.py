@@ -54,8 +54,17 @@ class FileValidator:
         )
 
 
-@deconstructible
-class VoteValidator:
+class VoteRequestValidator:
+
     def __call__(self, data: dict):
-        if data.get('vote_type') is None and data.get('is_shared'):
-            pass
+        if data.get('vote_type') is None:
+            raise ValidationError('vote_type not specified')
+
+        if data.get('votable_type') is None:
+            raise ValidationError('votable_type not specified')
+
+        if data.get('votable_id') is None:
+            raise ValidationError('votable_id not specified')
+
+        if data.get('voter') is None:
+            raise ValidationError('voter is not specified')

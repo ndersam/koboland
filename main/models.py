@@ -182,7 +182,17 @@ class VoteQuerySet(models.QuerySet):
         return self.get(object_id=votable_id, voter=voter, content_type__model=votable_type)
 
     def create_object(self, user, votable_type, votable_id, vote_type=None, is_shared=None):
+        """
+        Creates and returns a Vote object.
+        Returns None if the following condition is satisifies:
+            `(vote_type is None or vote_type == Vote.DIS_LIKE) and (is_shared is None or is_shared is False)`
+        """
         kwargs = dict()
+
+        # No point storing vote that indicates `not-shared && NO_VOTE`
+        if (vote_type is None or vote_type == Vote.DIS_LIKE) and (is_shared is None or is_shared is False):
+            return
+
         if vote_type is not None:
             kwargs['vote_type'] = vote_type
         if is_shared is not None:
@@ -250,7 +260,11 @@ class Vote(models.Model):
                 votable.shares += 1
             self.is_shared = new_share_status
         votable.save()
-        self.save()
+        if (self.vote_type is None or self.vote_type == self.NO_VOTE) and (
+                self.is_shared is None or self.is_shared is False):
+            self.delete()
+        else:
+            self.save()
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

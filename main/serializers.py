@@ -4,24 +4,6 @@ from rest_framework import serializers
 from main.models import User, Post, Topic, Board, Vote
 
 
-class PostVoteSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
-
-    # class Meta:
-    #     model = PostVote
-    #     fields = ('vote_type', 'post', 'user')
-
-
-class TopicVoteSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    topic = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all())
-
-    # class Meta:
-    #     model = TopicVote
-    #     fields = ('vote_type', 'topic', 'user')
-
-
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
     topic = serializers.PrimaryKeyRelatedField(queryset=Topic.objects.all())
@@ -68,15 +50,3 @@ class VoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vote
         fields = ('vote_type', 'voter', 'content_object')
-
-# class VoteSerializer(serializers.ModelSerializer):
-#     voter = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-#     content_object = GenericRelatedField({
-#         Topic: AuxTopicSerializer(),
-#         Post: AuxPostSerializer(),
-#     })
-#     content_type = serializers.CharField()
-#
-#     class Meta:
-#         model = Vote
-#         fields = ('vote_type', 'voter', 'content_object', 'content_type',)
