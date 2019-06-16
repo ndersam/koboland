@@ -57,7 +57,7 @@ class SubmissionMedia(models.Model):
         return self.content_type.startswith('image')
 
 
-class Submission(models.Model):
+class Votable(models.Model):
     content = models.TextField(blank=True)
     content_html = models.TextField(blank=True)
     modified = models.BooleanField(default=False)
@@ -110,7 +110,7 @@ class Submission(models.Model):
                 success = True
 
 
-class Topic(Submission):
+class Topic(Votable):
     title = models.CharField(max_length=80, validators=[MinLengthValidator(1)])
     slug = models.SlugField(max_length=48)
     author = models.ForeignKey('User', related_name='topics', on_delete=models.SET_NULL, null=True)
@@ -140,7 +140,7 @@ class Topic(Submission):
         return self.title
 
 
-class Post(Submission):
+class Post(Votable):
     author = models.ForeignKey('User', related_name='posts', on_delete=models.SET_NULL, null=True)
     topic = models.ForeignKey('Topic', related_name='posts', on_delete=models.CASCADE)
 
@@ -167,19 +167,23 @@ class Post(Submission):
         return self.topic.get_absolute_url()
 
 
-class SubmissionVote(models.Model):
+class Vote(models.Model):
     LIKE = 1
-    SHARE = 2
+    DIS_LIKE = -1
+    NO_VOTE = 0
     VOTE_TYPES = (
-        (LIKE, _("Like")), (SHARE, _("Share")),
+        (LIKE, _("Like")), (DIS_LIKE, _("Dislike")),
     )
-    vote_type = models.IntegerField(choices=VOTE_TYPES, default=None, null=False)
+
+    vote_type = models.IntegerField(choices=VOTE_TYPES, null=False)
+    vote_time = models.DateTimeField(auto_now_add=True)
+    is_shared = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
 
 
-class TopicVote(SubmissionVote):
+class TopicVote(Vote):
     user = models.ForeignKey('User', related_name='topic_votes', on_delete=models.CASCADE)
     topic = models.ForeignKey('Topic', related_name='votes', on_delete=models.CASCADE)
 
@@ -191,7 +195,7 @@ class TopicVote(SubmissionVote):
         if self.vote_type == self.LIKE:
             self.topic.likes += 1
         else:
-            self.topic.shares += 1
+            self.topic.dislikes += 1
         self.topic.save()
         super().save(force_insert, force_update, using, update_fields)
 
@@ -204,7 +208,7 @@ class TopicVote(SubmissionVote):
         super().delete(using, keep_parents)
 
 
-class PostVote(SubmissionVote):
+class PostVote(Vote):
     user = models.ForeignKey('User', related_name='post_votes', on_delete=models.CASCADE)
     post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
 

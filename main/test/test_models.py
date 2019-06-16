@@ -24,8 +24,8 @@ class TestModel(TestCase):
         topic = factories.TopicFactory(board=board, author=user)
         post = factories.PostFactory(author=user, topic=topic)
 
-        vote = models.PostVote.objects.create(user=user, post=post, vote_type=models.SubmissionVote.LIKE)
-        self.assertEqual(vote.vote_type, models.SubmissionVote.LIKE)
+        vote = models.PostVote.objects.create(user=user, post=post, vote_type=models.Vote.LIKE)
+        self.assertEqual(vote.vote_type, models.Vote.LIKE)
         self.assertEqual(post.votes.count(), 1)
         self.assertEqual(post.likes, 1)
         self.assertEqual(user.post_votes.count(), 1)
@@ -41,8 +41,8 @@ class TestModel(TestCase):
         topic = factories.TopicFactory(board=board, author=user)
         post = factories.PostFactory(author=user, topic=topic)
 
-        vote = models.PostVote.objects.create(user=user, post=post, vote_type=models.SubmissionVote.SHARE)
-        self.assertEqual(vote.vote_type, models.SubmissionVote.SHARE)
+        vote = models.PostVote.objects.create(user=user, post=post, vote_type=models.Vote.SHARE)
+        self.assertEqual(vote.vote_type, models.Vote.SHARE)
         self.assertEqual(post.votes.count(), 1)
         self.assertEqual(post.shares, 1)
         self.assertEqual(user.post_votes.count(), 1)
@@ -57,8 +57,8 @@ class TestModel(TestCase):
         board = factories.BoardFactory()
         topic = factories.TopicFactory(board=board, author=user)
 
-        vote = models.TopicVote.objects.create(user=user, topic=topic, vote_type=models.SubmissionVote.LIKE)
-        self.assertEqual(vote.vote_type, models.SubmissionVote.LIKE)
+        vote = models.TopicVote.objects.create(user=user, topic=topic, vote_type=models.Vote.LIKE)
+        self.assertEqual(vote.vote_type, models.Vote.LIKE)
         self.assertEqual(topic.votes.count(), 1)
         self.assertEqual(topic.likes, 1)
         self.assertEqual(user.topic_votes.count(), 1)
@@ -73,8 +73,8 @@ class TestModel(TestCase):
         board = factories.BoardFactory()
         topic = factories.TopicFactory(board=board, author=user)
 
-        vote = models.TopicVote.objects.create(user=user, topic=topic, vote_type=models.SubmissionVote.SHARE)
-        self.assertEqual(vote.vote_type, models.SubmissionVote.SHARE)
+        vote = models.TopicVote.objects.create(user=user, topic=topic, vote_type=models.Vote.SHARE)
+        self.assertEqual(vote.vote_type, models.Vote.SHARE)
         self.assertEqual(topic.votes.count(), 1)
         self.assertEqual(topic.shares, 1)
         self.assertEqual(user.topic_votes.count(), 1)
