@@ -12,7 +12,7 @@ from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
 from .forms import UserCreationForm, PostCreateForm, TopicCreateForm
-from .models import Topic, Board, PostVote, TopicVote
+from .models import Topic, Board, Vote
 
 logger = logging.getLogger(__name__)
 
@@ -48,21 +48,21 @@ class PostListView(ListView):
     def get_queryset(self):
         self.topic = Topic.objects.filter(id=self.kwargs['topic_id']).prefetch_related('files').first()
         if self.request.user.is_authenticated:
-            votes = self.topic.votes.filter(user=self.request.user)
+            votes = self.topic.votes.filter(voter=self.request.user)
             for vote in votes:
-                if vote.vote_type == TopicVote.LIKE:
+                if vote.vote_type == Vote.LIKE:
                     self.topic.is_liked = True
-                elif vote.vote_type == TopicVote.SHARE:
+                elif vote.vote_type == Vote.SHARE:
                     self.topic.is_shared = True
 
         posts = self.topic.posts.all().prefetch_related('votes', 'files').order_by(*self.ordering)
         if self.request.user.is_authenticated:
             for post in posts:
-                votes = post.votes.filter(user=self.request.user)
+                votes = post.votes.filter(voter=self.request.user)
                 for vote in votes:
-                    if vote.vote_type == PostVote.LIKE:
+                    if vote.vote_type == Vote.LIKE:
                         post.is_liked = True
-                    elif vote.vote_type == PostVote.SHARE:
+                    elif vote.vote_type == Vote.SHARE:
                         post.is_shared = True
         return posts
 

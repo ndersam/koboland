@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.urls import path, re_path
 
-from .api import PostVoteAPI, PostCreateAPI, TopicVoteAPI, TopicCreateAPI
+from .api import PostCreateAPI, TopicCreateAPI, VotableVoteAPI
 from .forms import AuthenticationForm
 from .views import (SignupView, PostListView, TopicListView, HomeListView,
                     TopicCreateView, logout_view)
@@ -17,8 +17,8 @@ urlpatterns = [
     re_path(r'~(?P<board>[A-Za-z0-9-_]+)/$', TopicListView.as_view(), name='board'),
     re_path(r'~(?P<board>[A-Za-z0-9-_]+)/(?P<topic_id>\d+)/(?P<topic_slug>[A-Za-z0-9-_]+)/$', PostListView.as_view(),
             name='topic'),
-    path('api-auth/post/vote/', PostVoteAPI.as_view(), name='post_vote'),
-    path('api-auth/topic/vote/', TopicVoteAPI.as_view(), name='topic_vote'),
+    path('api-auth/vote/', VotableVoteAPI.as_view(), name='votable_vote'),
+    # path('api-auth/topic/vote/', TopicVoteAPI.as_view(), name='topic_vote'),
     path('api-auth/submit/post/', PostCreateAPI.as_view(), name='post_create'),
     path('api-auth/submit/topic/', TopicCreateAPI.as_view(), name='topic_create'),
     path('submit/', TopicCreateView.as_view(), name='topic_create_view'),

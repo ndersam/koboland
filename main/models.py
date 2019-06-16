@@ -5,6 +5,8 @@ from datetime import timedelta
 import mistune
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinLengthValidator
 from django.db import IntegrityError
 from django.db import models
@@ -69,6 +71,8 @@ class Votable(models.Model):
     dislikes = models.IntegerField(default=0)
     shares = models.IntegerField(default=0)
     score = models.IntegerField(default=0)
+
+    votes = GenericRelation('Vote')
 
     class Meta:
         abstract = True
@@ -167,70 +171,150 @@ class Post(Votable):
         return self.topic.get_absolute_url()
 
 
+class VoteQuerySet(models.QuerySet):
+    def on_topics(self):
+        return self.filter(content_type__model='topic')
+
+    def on_posts(self):
+        return self.filter(content_type__model='post')
+
+
 class Vote(models.Model):
     LIKE = 1
     DIS_LIKE = -1
     NO_VOTE = 0
+    SHARE = 10
     VOTE_TYPES = (
-        (LIKE, _("Like")), (DIS_LIKE, _("Dislike")),
+        (LIKE, _("Like")), (DIS_LIKE, _("Dislike")), (NO_VOTE, _("NoVote")),
     )
 
-    vote_type = models.IntegerField(choices=VOTE_TYPES, null=False)
+    voter = models.ForeignKey('User', on_delete=models.PROTECT, null=True)
+    vote_type = models.IntegerField(choices=VOTE_TYPES, null=False, default=NO_VOTE)
     vote_time = models.DateTimeField(auto_now_add=True)
     is_shared = models.BooleanField(default=False)
 
-    class Meta:
-        abstract = True
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
 
-
-class TopicVote(Vote):
-    user = models.ForeignKey('User', related_name='topic_votes', on_delete=models.CASCADE)
-    topic = models.ForeignKey('Topic', related_name='votes', on_delete=models.CASCADE)
+    objects = VoteQuerySet.as_manager()
 
     class Meta:
-        unique_together = ('user', 'topic', 'vote_type')
+        index_together = [
+            ['content_type', 'object_id']
+        ]
+
+    def __str__(self):
+        return f'{self.vote_type} - votable_type:{self.content_type}'
+
+    def set_shared(self, is_shared):
+        self.change_vote(new_share_status=is_shared)
+
+    def change_vote(self, new_vote_type=None, new_share_status=None):
+        votable = self.content_object
+
+        if new_vote_type is not None:
+            if self.vote_type == self.LIKE and new_vote_type == self.DIS_LIKE:
+                votable.likes -= 1
+                votable.dislikes += 1
+            elif self.vote_type == self.LIKE and new_vote_type == self.NO_VOTE:
+                votable.likes -= 1
+            elif self.vote_type == self.DIS_LIKE and new_vote_type == self.LIKE:
+                votable.likes += 1
+                votable.dislikes -= 1
+            elif self.vote_type == self.DIS_LIKE and new_vote_type == self.NO_VOTE:
+                votable.dislikes -= 1
+            elif self.vote_type == self.NO_VOTE and new_vote_type == self.LIKE:
+                votable.likes += 1
+            elif self.vote_type == self.NO_VOTE and new_vote_type == self.DIS_LIKE:
+                votable.dislikes += 1
+            self.vote_type = new_vote_type
+
+        if new_share_status is not None:
+            if self.is_shared is True and new_share_status is False:
+                votable.shares -= 1
+            elif self.is_shared is False and new_share_status is True:
+                votable.shares += 1
+            self.is_shared = new_share_status
+        votable.save()
+        self.save()
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        if self.vote_type == self.LIKE:
-            self.topic.likes += 1
-        else:
-            self.topic.dislikes += 1
-        self.topic.save()
+        # Initially created
+        if not self.pk:
+            votable = self.content_object
+            if self.vote_type == self.LIKE:
+                votable.likes += 1
+            elif self.vote_type == self.DIS_LIKE:
+                votable.dislikes += 1
+
+            if self.is_shared:
+                votable.shares += 1
+            votable.save()
         super().save(force_insert, force_update, using, update_fields)
 
     def delete(self, using=None, keep_parents=False):
+        votable = self.content_object
         if self.vote_type == self.LIKE:
-            self.topic.likes += -1
-        else:
-            self.topic.shares += -1
-        self.topic.save()
+            votable.likes -= 1
+        elif self.vote_type == self.DIS_LIKE:
+            votable.dislikes -= 1
+
+        if self.is_shared:
+            votable.shares -= 1
+        votable.save()
         super().delete(using, keep_parents)
 
 
-class PostVote(Vote):
-    user = models.ForeignKey('User', related_name='post_votes', on_delete=models.CASCADE)
-    post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
+# class TopicVote(Vote):
+#     user = models.ForeignKey('User', related_name='topic_votes', on_delete=models.CASCADE)
+#     topic = models.ForeignKey('Topic', related_name='votes', on_delete=models.CASCADE)
+#
+#     class Meta:
+#         unique_together = ('user', 'topic', 'vote_type')
+#
+#     def save(self, force_insert=False, force_update=False, using=None,
+#              update_fields=None):
+#         if self.vote_type == self.LIKE:
+#             self.topic.likes += 1
+#         else:
+#             self.topic.dislikes += 1
+#         self.topic.save()
+#         super().save(force_insert, force_update, using, update_fields)
+#
+#     def delete(self, using=None, keep_parents=False):
+#         if self.vote_type == self.LIKE:
+#             self.topic.likes += -1
+#         else:
+#             self.topic.shares += -1
+#         self.topic.save()
+#         super().delete(using, keep_parents)
 
-    class Meta:
-        unique_together = ('user', 'post', 'vote_type')
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
-        if self.vote_type == self.LIKE:
-            self.post.likes += 1
-        else:
-            self.post.shares += 1
-        self.post.save()
-        super().save(force_insert, force_update, using, update_fields)
-
-    def delete(self, using=None, keep_parents=False):
-        if self.vote_type == self.LIKE:
-            self.post.likes += -1
-        else:
-            self.post.shares += -1
-        self.post.save()
-        super().delete(using, keep_parents)
+# class PostVote(Vote):
+#     user = models.ForeignKey('User', related_name='post_votes', on_delete=models.CASCADE)
+#     post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
+#
+#     class Meta:
+#         unique_together = ('user', 'post', 'vote_type')
+#
+#     def save(self, force_insert=False, force_update=False, using=None,
+#              update_fields=None):
+#         if self.vote_type == self.LIKE:
+#             self.post.likes += 1
+#         else:
+#             self.post.shares += 1
+#         self.post.save()
+#         super().save(force_insert, force_update, using, update_fields)
+#
+#     def delete(self, using=None, keep_parents=False):
+#         if self.vote_type == self.LIKE:
+#             self.post.likes += -1
+#         else:
+#             self.post.shares += -1
+#         self.post.save()
+#         super().delete(using, keep_parents)
 
 
 class UserManager(BaseUserManager):

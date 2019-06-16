@@ -18,7 +18,7 @@ class TestVoteAPI(TestCase):
 
     def test_like_post_works(self):
         resp = self.client.post(reverse('post_vote'), data={
-            'vote_type': models.PostVote.LIKE,
+            'vote_type': models.Vote.LIKE,
             'post': self.post.id,
         }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_201_CREATED)
@@ -28,7 +28,7 @@ class TestVoteAPI(TestCase):
 
     def test_share_post_works(self):
         resp = self.client.post(reverse('post_vote'), data={
-            'vote_type': models.PostVote.SHARE,
+            'vote_type': models.Vote.SHARE,
             'post': self.post.id,
         }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_201_CREATED)
@@ -38,7 +38,7 @@ class TestVoteAPI(TestCase):
 
     def test_unlike_liked_post_works(self):
         resp = self.client.post(reverse('post_vote'), data={
-            'vote_type': models.PostVote.LIKE,
+            'vote_type': models.Vote.LIKE,
             'post': self.post.id,
         }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_201_CREATED)
@@ -47,7 +47,7 @@ class TestVoteAPI(TestCase):
         self.assertEquals(self.post.votes.count(), 1)
 
         resp = self.client.delete(reverse('post_vote'), data={
-            'vote_type': models.PostVote.LIKE,
+            'vote_type': models.Vote.LIKE,
             'post': self.post.id,
         }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_204_NO_CONTENT)
@@ -57,7 +57,7 @@ class TestVoteAPI(TestCase):
 
     def test_unshare_shared_post_works(self):
         resp = self.client.post(reverse('post_vote'), data={
-            'vote_type': models.PostVote.SHARE,
+            'vote_type': models.Vote.SHARE,
             'post': self.post.id,
         }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_201_CREATED)
@@ -66,7 +66,7 @@ class TestVoteAPI(TestCase):
         self.assertEquals(self.post.votes.count(), 1)
 
         resp = self.client.delete(reverse('post_vote'), data={
-            'vote_type': models.PostVote.SHARE,
+            'vote_type': models.Vote.SHARE,
             'post': self.post.id,
         }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_204_NO_CONTENT)
@@ -76,7 +76,7 @@ class TestVoteAPI(TestCase):
 
     def test_like_unliked_post_returns_404(self):
         resp = self.client.delete(reverse('post_vote'), data={
-            'vote_type': models.PostVote.LIKE,
+            'vote_type': models.Vote.LIKE,
             'post': self.post.id,
         }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_404_NOT_FOUND)
@@ -84,7 +84,7 @@ class TestVoteAPI(TestCase):
 
     def test_share_unshared_post_returns_404(self):
         resp = self.client.delete(reverse('post_vote'), data={
-            'vote_type': models.PostVote.SHARE,
+            'vote_type': models.Vote.SHARE,
             'post': self.post.id,
         }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_404_NOT_FOUND)

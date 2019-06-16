@@ -21,6 +21,7 @@ django-widget-tweaks = "*"
 python-magic-bin = "*"
 markdown = "*"
 pymdown-extensions = "*"
+rest-framework-generic-relations = "*"
 
 [requires]
 python_version = "3.7"

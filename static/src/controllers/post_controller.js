@@ -2,7 +2,10 @@ import {Controller} from "stimulus";
 
 const Utils = require('../js/utils');
 const LIKE = 1;
-const SHARE = 2;
+const DISLIKE = -1;
+const NO_VOTE = 0;
+const SHARE = 10;
+const URL = '/api-auth/vote/';
 
 const DATA_ITEM_CLASS = 'data-item-class';
 const DATA_ITEM_ID = 'data-item';
@@ -53,17 +56,28 @@ export default class extends Controller {
         }
     }
 
-    vote(vote_type, method) {
+    vote(vote_type = null, is_shared = null) {
+
+        if (vote_type == null && is_shared == null) {
+            return;
+        }
+
         const headers = new Headers();
         headers.set('Content-type', 'application/json');
         headers.set('X-CSRFToken', Utils.getCookie('csrftoken'));
 
-        const payload = {vote_type: vote_type};
-        payload[this.payload_key] = Number.parseInt(this.item);
+        const payload = {};
+        payload['votable_id'] = Number.parseInt(this.item);
+        payload['votable_type'] = this.payload_key;
+        if (vote_type != null) {
+            payload['vote_type'] = vote_type;
+        }
+        if (is_shared != null) {
+            payload['is_shared'] = is_shared;
+        }
 
-
-        fetch(this.url, {
-            method: method,
+        fetch(URL, {
+            method: 'POST',
             body: JSON.stringify(payload),
             headers: headers
         }).then(r => {
@@ -72,7 +86,7 @@ export default class extends Controller {
     }
 
     like() {
-        this.vote(LIKE, get_method(this.checked));
+        this.vote(this.checked ? NO_VOTE : LIKE);
         if (this.checked) {
             this.votes--;
             this.element.innerHTML = `Like(${this.votes})`;
@@ -84,7 +98,7 @@ export default class extends Controller {
     }
 
     share() {
-        this.vote(SHARE, get_method(this.checked));
+        this.vote(null, !this.checked);
 
         if (this.checked) {
             this.votes--;

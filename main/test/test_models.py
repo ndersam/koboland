@@ -18,71 +18,71 @@ class TestModel(TestCase):
         )
         self.assertGreater(len(topic.slug), 0)
 
-    def test_post_likes_works_correctly(self):
-        user = factories.UserFactory()
-        board = factories.BoardFactory()
-        topic = factories.TopicFactory(board=board, author=user)
-        post = factories.PostFactory(author=user, topic=topic)
+    # def test_post_likes_works_correctly(self):
+    #     user = factories.UserFactory()
+    #     board = factories.BoardFactory()
+    #     topic = factories.TopicFactory(board=board, author=user)
+    #     post = factories.PostFactory(author=user, topic=topic)
+    #
+    #     vote = models.PostVote.objects.create(user=user, post=post, vote_type=models.Vote.LIKE)
+    #     self.assertEqual(vote.vote_type, models.Vote.LIKE)
+    #     self.assertEqual(post.votes.count(), 1)
+    #     self.assertEqual(post.likes, 1)
+    #     self.assertEqual(user.post_votes.count(), 1)
+    #
+    #     vote.delete()
+    #     self.assertEqual(post.votes.count(), 0)
+    #     self.assertEqual(post.likes, 0)
+    #     self.assertEqual(user.post_votes.count(), 0)
 
-        vote = models.PostVote.objects.create(user=user, post=post, vote_type=models.Vote.LIKE)
-        self.assertEqual(vote.vote_type, models.Vote.LIKE)
-        self.assertEqual(post.votes.count(), 1)
-        self.assertEqual(post.likes, 1)
-        self.assertEqual(user.post_votes.count(), 1)
+    # def test_post_shares_works_correctly(self):
+    #     user = factories.UserFactory()
+    #     board = factories.BoardFactory()
+    #     topic = factories.TopicFactory(board=board, author=user)
+    #     post = factories.PostFactory(author=user, topic=topic)
+    #
+    #     vote = models.PostVote.objects.create(user=user, post=post, vote_type=models.Vote.SHARE)
+    #     self.assertEqual(vote.vote_type, models.Vote.SHARE)
+    #     self.assertEqual(post.votes.count(), 1)
+    #     self.assertEqual(post.shares, 1)
+    #     self.assertEqual(user.post_votes.count(), 1)
+    #
+    #     vote.delete()
+    #     self.assertEqual(post.votes.count(), 0)
+    #     self.assertEqual(post.shares, 0)
+    #     self.assertEqual(user.post_votes.count(), 0)
 
-        vote.delete()
-        self.assertEqual(post.votes.count(), 0)
-        self.assertEqual(post.likes, 0)
-        self.assertEqual(user.post_votes.count(), 0)
+    # def test_topic_likes_works_correctly(self):
+    #     user = factories.UserFactory()
+    #     board = factories.BoardFactory()
+    #     topic = factories.TopicFactory(board=board, author=user)
+    #
+    #     vote = models.TopicVote.objects.create(user=user, topic=topic, vote_type=models.Vote.LIKE)
+    #     self.assertEqual(vote.vote_type, models.Vote.LIKE)
+    #     self.assertEqual(topic.votes.count(), 1)
+    #     self.assertEqual(topic.likes, 1)
+    #     self.assertEqual(user.topic_votes.count(), 1)
+    #
+    #     vote.delete()
+    #     self.assertEqual(topic.votes.count(), 0)
+    #     self.assertEqual(topic.likes, 0)
+    #     self.assertEqual(user.topic_votes.count(), 0)
 
-    def test_post_shares_works_correctly(self):
-        user = factories.UserFactory()
-        board = factories.BoardFactory()
-        topic = factories.TopicFactory(board=board, author=user)
-        post = factories.PostFactory(author=user, topic=topic)
-
-        vote = models.PostVote.objects.create(user=user, post=post, vote_type=models.Vote.SHARE)
-        self.assertEqual(vote.vote_type, models.Vote.SHARE)
-        self.assertEqual(post.votes.count(), 1)
-        self.assertEqual(post.shares, 1)
-        self.assertEqual(user.post_votes.count(), 1)
-
-        vote.delete()
-        self.assertEqual(post.votes.count(), 0)
-        self.assertEqual(post.shares, 0)
-        self.assertEqual(user.post_votes.count(), 0)
-
-    def test_topic_likes_works_correctly(self):
-        user = factories.UserFactory()
-        board = factories.BoardFactory()
-        topic = factories.TopicFactory(board=board, author=user)
-
-        vote = models.TopicVote.objects.create(user=user, topic=topic, vote_type=models.Vote.LIKE)
-        self.assertEqual(vote.vote_type, models.Vote.LIKE)
-        self.assertEqual(topic.votes.count(), 1)
-        self.assertEqual(topic.likes, 1)
-        self.assertEqual(user.topic_votes.count(), 1)
-
-        vote.delete()
-        self.assertEqual(topic.votes.count(), 0)
-        self.assertEqual(topic.likes, 0)
-        self.assertEqual(user.topic_votes.count(), 0)
-
-    def test_topic_shares_works_correctly(self):
-        user = factories.UserFactory()
-        board = factories.BoardFactory()
-        topic = factories.TopicFactory(board=board, author=user)
-
-        vote = models.TopicVote.objects.create(user=user, topic=topic, vote_type=models.Vote.SHARE)
-        self.assertEqual(vote.vote_type, models.Vote.SHARE)
-        self.assertEqual(topic.votes.count(), 1)
-        self.assertEqual(topic.shares, 1)
-        self.assertEqual(user.topic_votes.count(), 1)
-
-        vote.delete()
-        self.assertEqual(topic.votes.count(), 0)
-        self.assertEqual(topic.shares, 0)
-        self.assertEqual(user.topic_votes.count(), 0)
+    # def test_topic_shares_works_correctly(self):
+    #     user = factories.UserFactory()
+    #     board = factories.BoardFactory()
+    #     topic = factories.TopicFactory(board=board, author=user)
+    #
+    #     vote = models.TopicVote.objects.create(user=user, topic=topic, vote_type=models.Vote.SHARE)
+    #     self.assertEqual(vote.vote_type, models.Vote.SHARE)
+    #     self.assertEqual(topic.votes.count(), 1)
+    #     self.assertEqual(topic.shares, 1)
+    #     self.assertEqual(user.topic_votes.count(), 1)
+    #
+    #     vote.delete()
+    #     self.assertEqual(topic.votes.count(), 0)
+    #     self.assertEqual(topic.shares, 0)
+    #     self.assertEqual(user.topic_votes.count(), 0)
 
     def test_create_new_post_increases_topic_post_count(self):
         user = factories.UserFactory()
