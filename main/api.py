@@ -47,8 +47,8 @@ class PostVoteAPI(APIView):
 class VotableVoteAPI(APIView):
     queryset = Vote.objects.all()
 
-    TOPIC = 10
-    POST = 20
+    TOPIC = 'topic'
+    POST = 'post'
 
     @classmethod
     def get_object(cls, user, votable_type, votable_id):

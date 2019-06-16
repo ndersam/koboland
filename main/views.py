@@ -52,8 +52,8 @@ class PostListView(ListView):
             for vote in votes:
                 if vote.vote_type == Vote.LIKE:
                     self.topic.is_liked = True
-                elif vote.vote_type == Vote.SHARE:
-                    self.topic.is_shared = True
+
+                self.topic.is_shared = vote.is_shared
 
         posts = self.topic.posts.all().prefetch_related('votes', 'files').order_by(*self.ordering)
         if self.request.user.is_authenticated:
@@ -62,8 +62,8 @@ class PostListView(ListView):
                 for vote in votes:
                     if vote.vote_type == Vote.LIKE:
                         post.is_liked = True
-                    elif vote.vote_type == Vote.SHARE:
-                        post.is_shared = True
+
+                    post.is_shared = vote.is_shared
         return posts
 
     def get_context_data(self, *, object_list=None, **kwargs):
