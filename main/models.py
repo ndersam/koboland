@@ -178,6 +178,19 @@ class VoteQuerySet(models.QuerySet):
     def on_posts(self):
         return self.filter(content_type__model='post')
 
+    def get_object(self, voter, votable_type, votable_id):
+        return self.get(object_id=votable_id, voter=voter, content_type__model=votable_type)
+
+    def create_object(self, user, votable_type, votable_id, vote_type=None, is_shared=None):
+        kwargs = dict()
+        if vote_type is not None:
+            kwargs['vote_type'] = vote_type
+        if is_shared is not None:
+            kwargs['is_shared'] = is_shared
+        content_object = Topic.objects.get(id=votable_id) if votable_type == 'topic' else Post.objects.get(
+            id=votable_id)
+        return self.create(object_id=votable_id, content_object=content_object, voter=user, **kwargs)
+
 
 class Vote(models.Model):
     LIKE = 1

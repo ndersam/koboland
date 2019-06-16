@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib.contenttypes.fields import ContentType
 from django.http import Http404
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
@@ -53,26 +52,14 @@ class VotableVoteAPI(APIView):
     @classmethod
     def get_object(cls, user, votable_type, votable_id):
         try:
-            content_object = Topic.objects.get(id=votable_id) if votable_type == cls.TOPIC else Post.objects.get(
-                id=votable_id)
-            content_type = ContentType.objects.get_for_model(content_object)
-            return cls.queryset.get(object_id=votable_id, voter=user, content_type=content_type)
+            return Vote.objects.get_object(user, votable_type, votable_id)
         except (Topic.DoesNotExist, Post.DoesNotExist, Vote.DoesNotExist) as e:
-            print(e)
             raise e
 
     @classmethod
-    def create_object(cls, user, votable_type, votable_id, vote_type=None, share_status=None):
+    def create_object(cls, user, votable_type, votable_id, vote_type=None, is_shared=None):
         try:
-            kwargs = dict()
-            if vote_type is not None:
-                kwargs['vote_type'] = vote_type
-            if share_status is not None:
-                kwargs['is_shared'] = share_status
-
-            content_object = Topic.objects.get(id=votable_id) if votable_type == cls.TOPIC else Post.objects.get(
-                id=votable_id)
-            return cls.queryset.create(content_object=content_object, voter=user, **kwargs)
+            return Vote.objects.create_object(user, votable_type, votable_id, vote_type, is_shared)
         except Exception:
             raise Http404
 

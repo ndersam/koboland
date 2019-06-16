@@ -5,7 +5,7 @@ from django.utils.deconstruct import deconstructible
 
 
 @deconstructible
-class FileValidator(object):
+class FileValidator:
     error_messages = {
         'max_size': ("Ensure this file size is not greater than %(max_size)s."
                      " Your file size is %(size)s."),
@@ -52,3 +52,10 @@ class FileValidator(object):
                 self.min_size == other.min_size and
                 self.content_types == other.content_types
         )
+
+
+@deconstructible
+class VoteValidator:
+    def __call__(self, data: dict):
+        if data.get('vote_type') is None and data.get('is_shared'):
+            pass
