@@ -55,6 +55,8 @@ class SubmissionMedia(models.Model):
     file = models.FileField(upload_to=get_file_path)
     content_type = models.CharField(max_length=20)
 
+    owner = models.OneToOneField('User', on_delete=models.CASCADE, related_name='display_picture', null=True)
+
     def is_image(self):
         return self.content_type.startswith('image')
 
@@ -390,4 +392,5 @@ class User(AbstractUser):
     boards = models.ManyToManyField('Board', related_name='followers')
 
     about_text = models.TextField(blank=True, null=True)
+    reputation = models.IntegerField(default=0)
     objects = UserManager()

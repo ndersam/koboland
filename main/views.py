@@ -7,6 +7,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
@@ -50,9 +51,8 @@ class PostListView(ListView):
         if self.request.user.is_authenticated:
             votes = self.topic.votes.filter(voter=self.request.user)
             for vote in votes:
-                if vote.vote_type == Vote.LIKE:
-                    self.topic.is_liked = True
-
+                if vote.vote_type in [Vote.LIKE, Vote.DIS_LIKE, Vote.NO_VOTE]:
+                    self.topic.vote_type = vote.vote_type
                 self.topic.is_shared = vote.is_shared
 
         posts = self.topic.posts.all().prefetch_related('votes', 'files').order_by(*self.ordering)
@@ -60,9 +60,8 @@ class PostListView(ListView):
             for post in posts:
                 votes = post.votes.filter(voter=self.request.user)
                 for vote in votes:
-                    if vote.vote_type == Vote.LIKE:
-                        post.is_liked = True
-
+                    if vote.vote_type in [Vote.LIKE, Vote.DIS_LIKE, Vote.NO_VOTE]:
+                        post.vote_type = vote.vote_type
                     post.is_shared = vote.is_shared
         return posts
 
@@ -123,6 +122,7 @@ class TopicCreateView(LoginRequiredMixin, CreateView):
         kwargs = self.get_form_kwargs()
         initial_board = kwargs.pop('board') if kwargs.get('board') else None
         form = TopicCreateForm(**kwargs)
+        form.fields['board'].empty_label = _("Select board . . .")
         # TODO .... Fix this .. wrong capitalization fucks this
         if initial_board:
             form.fields['board'].initial = initial_board
@@ -134,6 +134,7 @@ def logout_view(request):
     messages.info(
         request, "You've logged out successfully."
     )
-    redirect = reverse('home')
+
+    redirect = request.GET.get('next') or reverse('home')
     resp = HttpResponseRedirect(redirect)
     return resp

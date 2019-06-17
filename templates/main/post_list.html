@@ -8,43 +8,14 @@
             <span class="d-block"><a href="#"><strong
                     class="text-gray-dark">{{ topic.author }} </strong></a>   {{ topic.how_long_ago }}
                 {% if topic.modified %}(modified){% endif %}</span>
-        <div class="uc">
-            {{ topic.content_html|safe }}
-            {% for file in topic.files.all %}
-                {% if file.is_image %}
-                    <img src="{{ file.file.url }}" alt="post-image" class="img-fluid"/>
-                {% else %}
-                    <video class="img-fluid" controls>
-                        <source src="{{ file.file.url }}" type="{{ file.content_type }}">
-                        Your browser does not support the video tag.
-                    </video>
-                {% endif %}
-            {% endfor %}
 
-        </div>
-        <span class="d-block">{{ topic.post_count }} comments</span>
-        {% if user.is_authenticated %}
-            <span class="d-block">
-                    <span class="text-info"
-                          data-action="click->post#like" data-controller="post"
-                          data-item-class="topic"
-                          data-item-votes="{{ topic.likes }}"
-                          data-item-checked="{% if topic.is_liked %}1{% else %}0{% endif %}"
-                          data-item="{{ topic.id }}">Like{% if topic.is_liked %}d{% endif %}({{ topic.likes }})
-                    </span>
-                    <span class="text-danger"
-                          data-action="click->post#share" data-controller="post"
-                          data-item-class="topic"
-                          data-item-votes="{{ topic.shares }}"
-                          data-item-checked="{% if topic.is_shared %}1{% else %}0{% endif %}"
-                          data-item="{{ topic.id }}">Share{% if topic.is_shared %}d{% endif %}({{ topic.shares }})
-                    </span>
-                </span>
-        {% else %}
-            <span class="d-block"><span class="text-info">Likes({{ topic.likes }})</span> <span
-                    class="text-danger">Shares({{ topic.shares }})</span>
-            </span>
-        {% endif %}
+            {% include 'includes/votable/content.html' with item=topic %}
+            <span class="d-block">{{ topic.post_count }} comments</span>
+            {% if user.is_authenticated %}
+                {% include 'includes/votable/auth_action_field.html' with item=topic item_class='topic' %}
+            {% else %}
+                {% include 'includes/votable/action_field.html' with item=topic %}
+            {% endif %}
         </p>
     </div>
 
@@ -70,41 +41,12 @@
             <span class="d-block"><a href="#"><strong
                     class="text-gray-dark">{{ post.author }}</strong></a>  {{ post.how_long_ago }}{% if post.modified %}
                 (modified){% endif %}</span>
-        <div class="uc">
-            {{ post.content_html|safe }}
-            {% for file in post.files.all %}
-                {% if file.is_image %}
-                    <img src="{{ file.file.url }}" alt="post-image" class="img-fluid"/>
-                {% else %}
-                    <video class="img-fluid" controls>
-                        <source src="{{ file.file.url }}" type="{{ file.content_type }}">
-                        Your browser does not support the video tag.
-                    </video>
-                {% endif %}
-            {% endfor %}
-        </div>
-        {% if user.is_authenticated %}
-            <span class="d-block">
-                    <span class="text-info"
-                          data-action="click->post#like" data-controller="post"
-                          data-item-class="post"
-                          data-item-votes="{{ post.likes }}"
-                          data-item-checked="{% if post.is_liked %}1{% else %}0{% endif %}"
-                          data-item="{{ post.id }}">Like{% if post.is_liked %}d{% endif %}({{ post.likes }})
-                    </span>
-                    <span class="text-danger"
-                          data-action="click->post#share" data-controller="post"
-                          data-item-class="post"
-                          data-item-votes="{{ post.shares }}"
-                          data-item-checked="{% if post.is_shared %}1{% else %}0{% endif %}"
-                          data-item="{{ post.id }}">Share{% if post.is_shared %}d{% endif %}({{ post.shares }})
-                    </span>
-                </span>
-        {% else %}
-            <span class="d-block"><span class="text-info">Likes({{ post.likes }})</span> <span
-                    class="text-danger">Shares({{ post.shares }})</span>
-            </span>
-        {% endif %}
+            {% include 'includes/votable/content.html' with item=post %}
+            {% if user.is_authenticated %}
+                {% include 'includes/votable/auth_action_field.html' with item=post item_class='post' %}
+            {% else %}
+                {% include 'includes/votable/action_field.html' with item=post %}
+            {% endif %}
         </p>
     {% endfor %}
 

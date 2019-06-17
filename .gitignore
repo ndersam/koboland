@@ -153,3 +153,4 @@ fabric.properties
 static/node_modules/
 
 media/
+static/src/themify-icons/

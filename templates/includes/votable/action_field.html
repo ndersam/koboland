@@ -1,0 +1,15 @@
+{% load widget_tweaks %}
+<span class="d-block">
+    <button class="btn-act">
+        {% include "includes/icons/angle_up.html" %}
+    </button>
+    <span>{% if item.likes > 0 %}{{ item.likes }}{% endif %}</span>
+    <button class="btn-act">
+        {% include "includes/icons/angle_down.html" %}
+    </button>
+    <span>{% if item.dislikes > 0 %}{{ item.dislikes }}{% endif %}</span>
+    <button class="btn-act">
+        {% include "includes/icons/share.html" %}
+    </button>
+    <span>{% if item.shares > 0 %}{{ item.shares }}{% endif %}</span>
+ </span>
