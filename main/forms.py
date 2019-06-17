@@ -56,10 +56,10 @@ class AuthenticationForm(DjangoAuthenticationForm):
 
 class PostCreateForm(forms.ModelForm):
     files = forms.FileField(label='Select a file to upload',
-                            widget=forms.ClearableFileInput(attrs={'multiple': True,
-                                                                   'accept': ', '.join(
-                                                                       getattr(settings, 'SUBMISSION_MEDIA_TYPES',
-                                                                               ''))}),
+                            widget=forms.ClearableFileInput(
+                                attrs={'multiple': True,
+                                       'accept': ', '.join(
+                                           getattr(settings, 'SUBMISSION_MEDIA_TYPES', ''))}),
                             required=False)
 
     class Meta:
@@ -70,11 +70,11 @@ class PostCreateForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user')
+        self.author = kwargs.pop('author')
         super().__init__(*args, **kwargs)
 
 
-class TopicCreateForm(forms.ModelForm):
+class TopicCreateForm(PostCreateForm):
     files = forms.FileField(label='Add image/video',
                             widget=forms.ClearableFileInput(
                                 attrs={'multiple': True,
@@ -85,6 +85,6 @@ class TopicCreateForm(forms.ModelForm):
         model = Topic
         fields = ['content', 'board', 'files', 'title']
 
-    def __init__(self, *args, **kwargs):
-        self.author = kwargs.pop('author')
-        super().__init__(*args, **kwargs)
+    # def __init__(self, *args, **kwargs):
+    #     self.author = kwargs.pop('author')
+    #     super().__init__(*args, **kwargs)

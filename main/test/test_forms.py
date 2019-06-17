@@ -38,7 +38,7 @@ class TestPostCreateForm(TestCase):
                 'topic': self.topic.id,
                 'content': 'Testing Testing...',
             },
-            user=self.user
+            author=self.user
         )
         self.assertTrue(form.is_valid())
 
@@ -50,18 +50,18 @@ class TestPostCreateForm(TestCase):
                 'content': 'Testing Testing...',
                 'files': file
             },
-            user=self.user
+            author=self.user
         )
         self.assertTrue(form.is_valid())
 
     def test_form_works_with_blank_content(self):
-        form = forms.PostCreateForm({'topic': self.topic.id, 'content': ''}, user=self.user)
+        form = forms.PostCreateForm({'topic': self.topic.id, 'content': ''}, author=self.user)
         self.assertTrue(form.is_valid())
 
     def test_form_invalid_without_topic(self):
-        form = forms.PostCreateForm({'topic': None, 'content': ''}, user=self.user)
+        form = forms.PostCreateForm({'topic': None, 'content': ''}, author=self.user)
         self.assertFalse(form.is_valid())
 
     def test_form_invalid_without_user(self):
-        form = forms.PostCreateForm({'topic': None, 'content': ''}, user=None)
+        form = forms.PostCreateForm({'topic': None, 'content': ''}, author=None)
         self.assertFalse(form.is_valid())

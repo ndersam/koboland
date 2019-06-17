@@ -70,7 +70,7 @@ class PostListView(ListView):
         context['topic'] = self.topic
         if self.request.user.is_authenticated:
             form = PostCreateForm(initial={'topic': self.topic, 'redirect': self.topic.get_absolute_url()},
-                                  user=self.request.user)
+                                  author=self.request.user)
             context['form'] = form
         return context
 
