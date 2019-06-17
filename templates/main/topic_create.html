@@ -2,7 +2,8 @@
 
 {% block content %}
     <h2>New Topic</h2>
-    <form action="{% url 'topic_create' %}" method="POST" data-controller="post-creator"
+    <form class="form-votable"
+          action="{% url 'topic_create' %}" method="POST" data-controller="votable-creation" data-item-class="topic"
           enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.non_field_errors }}

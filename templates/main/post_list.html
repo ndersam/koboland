@@ -20,7 +20,8 @@
     </div>
 
     {% if user.is_authenticated %}
-        <form action="{% url 'post_create' %}" method="POST" data-controller="post-creator"
+        <form action="{% url 'post_create' %}" method="POST" data-controller="votable-creation" data-item-class="post"
+              class="form-votable"
               enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.non_field_errors }}

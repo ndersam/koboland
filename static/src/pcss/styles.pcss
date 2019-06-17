@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind preflight;
 
 .uc blockquote {
     border-left: .25em solid #dfe2e5;
@@ -60,4 +64,25 @@
 
 .btn-act:hover {
     background-color: #F0F0F0;
+}
+
+.form-votable ol {
+    padding-left: 0;
+}
+
+.form-votable li, .form-votable div > p {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    list-style-type: none;
+    border: 1px solid black;
+}
+
+.form-votable img {
+    height: 64px;
+}
+
+.form-votable p {
+    line-height: 32px;
+    padding-left: 10px;
 }

@@ -1,6 +1,7 @@
 import logging
 
 from django import forms
+from django.conf import settings
 from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm as DjangoUserCreationForm
 from django.contrib.auth.forms import UsernameField, AuthenticationForm as DjangoAuthenticationForm
@@ -55,7 +56,10 @@ class AuthenticationForm(DjangoAuthenticationForm):
 
 class PostCreateForm(forms.ModelForm):
     files = forms.FileField(label='Select a file to upload',
-                            widget=forms.ClearableFileInput(attrs={'multiple': True}),
+                            widget=forms.ClearableFileInput(attrs={'multiple': True,
+                                                                   'accept': ', '.join(
+                                                                       getattr(settings, 'SUBMISSION_MEDIA_TYPES',
+                                                                               ''))}),
                             required=False)
 
     class Meta:
@@ -71,8 +75,10 @@ class PostCreateForm(forms.ModelForm):
 
 
 class TopicCreateForm(forms.ModelForm):
-    files = forms.FileField(label='Select a file to upload',
-                            widget=forms.ClearableFileInput(attrs={'multiple': True}),
+    files = forms.FileField(label='Add image/video',
+                            widget=forms.ClearableFileInput(
+                                attrs={'multiple': True,
+                                       'accept': ', '.join(getattr(settings, 'SUBMISSION_MEDIA_TYPES', ''))}),
                             required=False)
 
     class Meta:
