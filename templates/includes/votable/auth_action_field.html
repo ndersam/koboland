@@ -2,7 +2,7 @@
 <span class="d-block"
       data-controller="votable"
       data-item-vote-state="{{ item.vote_type }}"
-      data-item-class="{{ item_class }}"
+      data-item-class="{{ item_class }}" {% if item_class == 'post' %}data-topic-id="{{ topic.id }}"{% endif %}
       data-item-like-count="{{ item.likes }}"
       data-item-shared="{% if item.is_shared %}1{% else %}0{% endif %}"
       data-item-share-count="{{ item.shares }}"

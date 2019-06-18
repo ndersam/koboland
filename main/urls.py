@@ -6,7 +6,7 @@ from django.urls import path, re_path
 from .api import PostCreateAPI, TopicCreateAPI, VotableVoteAPI
 from .forms import AuthenticationForm
 from .views import (SignupView, PostListView, TopicListView, HomeListView,
-                    TopicCreateView, logout_view)
+                    TopicCreateView, logout_view, PostCreateView)
 
 urlpatterns = [
     path('', HomeListView.as_view(), name='home'),
@@ -21,6 +21,7 @@ urlpatterns = [
     path('api-auth/submit/post/', PostCreateAPI.as_view(), name='post_create'),
     path('api-auth/submit/topic/', TopicCreateAPI.as_view(), name='topic_create'),
     path('submit/', TopicCreateView.as_view(), name='topic_create_view'),
+    path('comment/', PostCreateView.as_view(), name='post_create_view')
 ]
 
 if settings.DEBUG:  # new

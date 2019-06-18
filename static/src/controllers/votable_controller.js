@@ -8,7 +8,7 @@ const NO_VOTE = 0;
 const SHARE = 2;
 const UNSHARE = -2;
 const URL = '/api-auth/vote/';
-const URL_QUOTE_POST = '/submit/post/';
+const URL_POST = '/comment/';
 
 const POST_CLASS = 'post';
 const TOPIC_CLASS = 'topic';
@@ -25,7 +25,7 @@ const CHECKED_STATE_CLASS = 'btn-toggled';
 export default class extends Controller {
 
     static get targets() {
-        return ["like", "dislike", "share", "likeCount", "dislikeCount", "shareCount"];
+        return ["like", "dislike", "share", "likeCount", "dislikeCount", "shareCount", "topic"];
     }
 
     get vote_type() {
@@ -73,6 +73,10 @@ export default class extends Controller {
 
     get shareCount() {
         return Number.parseInt(this.element.getAttribute(DATA_ITEM_SHARE_COUNT));
+    }
+
+    get topicID() {
+        return this.topicTarget.getAttribute(DATA_ITEM_ID);
     }
 
     set shareCount(shares) {
@@ -199,7 +203,8 @@ export default class extends Controller {
     }
 
     quote() {
-        // Turbolinks.visit();
+        console.log(this.topicTargets);
+        Turbolinks.visit(`${URL_POST}?topic=${this.element.getAttribute('data-topic-id')}&post=${this.item}`);
     }
 
 }

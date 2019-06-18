@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Comment</h2>
+    <h1>{{ topic.title }}</h1>
+    <form class="form-votable"
+          action="{% url 'post_create' %}" method="POST" data-controller="votable-creation" data-item-class="post"
+          enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form.hidden_fields %}
+            {{ field }}
+        {% endfor %}
+        {% include "includes/form_field.html" with field=form.content %}
+        {% include "includes/form_field.html" with field=form.files %}
+        <button type="submit" class="btn btn-primary">
+            Post
+        </button>
+        <button class="btn btn-info">
+            Preview
+        </button>
+    </form>
+{% endblock %}

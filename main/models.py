@@ -2,7 +2,6 @@ import os
 import uuid
 from datetime import timedelta
 
-import mistune
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
@@ -19,6 +18,7 @@ from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from main import model_fields
+from .markdown import render
 
 
 class Board(models.Model):
@@ -92,9 +92,10 @@ class Votable(models.Model):
             return f'{hours} hour{pluralize(hours)} ago'
         return f'{how_long.days} day{pluralize(how_long.days)} ago'
 
-    # TODO --> Use a `Renderer class` so as to simply testing
     def generate_html(self):
-        return mistune.markdown(self.content)
+        html = render(self.content)
+        print(html)
+        return html
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -122,6 +123,8 @@ class Topic(Votable):
     slug = models.SlugField(max_length=48)
     author = models.ForeignKey('User', related_name='topics', on_delete=models.SET_NULL, null=True)
     board = models.ForeignKey('Board', related_name='topics', on_delete=models.CASCADE)
+    # is_closed = models.BooleanField(default=False)
+    # is_removed = models.BooleanField(default=False)
 
     post_count = models.IntegerField(default=0)
 

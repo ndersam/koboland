@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.edit import CreateView
@@ -13,7 +13,8 @@ from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
 from .forms import UserCreationForm, PostCreateForm, TopicCreateForm
-from .models import Topic, Board, Vote
+from .markdown import quote_post
+from .models import Topic, Board, Vote, Post
 
 logger = logging.getLogger(__name__)
 
@@ -138,3 +139,46 @@ def logout_view(request):
     redirect = request.GET.get('next') or reverse('home')
     resp = HttpResponseRedirect(redirect)
     return resp
+
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    template_name = 'main/post_create.html'
+    model = Post
+    queryset = Topic.objects.all()
+
+    def get_form_kwargs(self):
+        self.topic = None
+        kwargs = super().get_form_kwargs()
+        kwargs['author'] = self.request.user
+        if self.request.GET:
+            topic_id = self.request.GET.get('topic')
+            post_id = self.request.GET.get('post')
+            try:
+                if topic_id:
+                    self.topic = Topic.objects.get(id=topic_id)
+                    kwargs['topic'] = topic_id
+                if post_id:
+                    post = Post.objects.get(id=post_id)
+                    kwargs['post'] = quote_post(post)
+            except (Topic.DoesNotExist, Post.DoesNotExist):
+                pass
+        return kwargs
+
+    def get_form(self, form_class=None):
+        kwargs = self.get_form_kwargs()
+        topic = kwargs.pop('topic') if kwargs.get('topic') else None
+        parent_post = kwargs.pop('post') if kwargs.get('post') else None
+        kwargs['initial'].update({'topic': topic, 'content': parent_post})
+        form = PostCreateForm(**kwargs)
+        return form
+
+    def get_context_data(self, **kwargs):
+        kwargs = super().get_context_data(**kwargs)
+        kwargs['topic'] = self.topic
+        return kwargs
+
+    def get(self, request, *args, **kwargs):
+        resp = super().get(request, *args, **kwargs)
+        if self.topic is None:
+            raise Http404
+        return resp
