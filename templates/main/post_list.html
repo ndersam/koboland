@@ -33,22 +33,28 @@
             <button type="submit" class="btn btn-primary">
                 Post
             </button>
+            <button class="btn btn-info">
+                Preview
+            </button>
         </form>
     {% endif %}
 
 
-    {% for post in posts %}
-        <p>
-            <span class="d-block" id="{{ post.pseudoid }}"><a href="#" data-turbolinks="false"><strong
-                    class="text-gray-dark">{{ post.author }}</strong></a>  {{ post.how_long_ago }}{% if post.modified %}
-                (modified){% endif %}</span>
-            {% include 'includes/votable/content.html' with item=post %}
-            {% if user.is_authenticated %}
-                {% include 'includes/votable/auth_action_field.html' with item=post item_class='post' %}
-            {% else %}
-                {% include 'includes/votable/action_field.html' with item=post %}
-            {% endif %}
-        </p>
-    {% endfor %}
+    <div class="comments">
+        {% for post in posts %}
+            <div class="uc-wrapper" id="{{ post.pseudoid }}">
+            <span class="d-block meta-time"><a class="author" href="#"
+                                               data-turbolinks="false">{{ post.author }}</a>  {{ post.how_long_ago }}
+                {% if post.modified %}
+                    (modified){% endif %}</span>
+                {% include 'includes/votable/content.html' with item=post %}
+                {% if user.is_authenticated %}
+                    {% include 'includes/votable/auth_action_field.html' with item=post item_class='post' %}
+                {% else %}
+                    {% include 'includes/votable/action_field.html' with item=post %}
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
 
 {% endblock page_content %}

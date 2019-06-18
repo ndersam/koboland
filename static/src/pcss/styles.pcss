@@ -41,6 +41,24 @@
 }
 */
 
+.uc-wrapper {
+    margin: .25rem 0;
+    display: block;
+}
+
+.uc {
+    padding: .25rem 0;
+    font-size: 14px;
+}
+
+
+.uc > p:last-of-type {
+    margin-top: 0;
+    margin-bottom: 0 !important;
+}
+
+
+
 .uc blockquote {
     border-left: .25em solid #dfe2e5;
     color: #6a737d;
@@ -85,12 +103,33 @@
     word-wrap: normal;
 }
 
+
+.author {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.author:hover, .author:focus {
+    text-decoration: none;
+}
+
+.meta-time {
+    font-size: 12px;
+    color: #98abba;
+}
+
+.comments {
+    margin: 1rem 0;
+    display: block;
+}
+
+/********************************************************************************/
 .btn-votable {
     cursor: pointer;
     display: inline-block;
     white-space: nowrap;
     padding: 4px;
-    height: 34px;
+    height: 28px;
     vertical-align: middle;
     text-align: center;
     border: 1px solid transparent;
@@ -100,12 +139,12 @@
 
 .btn-votable-round {
     border-radius: 50%;
-    width: 34px;
+    width: 28px;
     cursor: pointer;
     display: inline-block;
     white-space: nowrap;
     padding: 4px;
-    height: 34px;
+    height: 28px;
     vertical-align: middle;
     text-align: center;
     border: 1px solid transparent;
