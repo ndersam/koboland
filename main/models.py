@@ -192,7 +192,7 @@ class VoteQuerySet(models.QuerySet):
         kwargs = dict()
 
         # No point storing vote that indicates `not-shared && NO_VOTE`
-        if (vote_type is None or vote_type == Vote.DIS_LIKE) and (is_shared is None or is_shared is False):
+        if (vote_type is None or vote_type == Vote.NO_VOTE) and (is_shared is None or is_shared is False):
             return
 
         if vote_type is not None:

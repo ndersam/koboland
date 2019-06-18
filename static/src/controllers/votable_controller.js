@@ -19,11 +19,12 @@ const DATA_ITEM_DISLIKE_COUNT = 'data-item-dislike-count';
 const DATA_ITEM_SHARE_COUNT = 'data-item-share-count';
 const DATA_ITEM_SHARED = 'data-item-shared';
 
+const CHECKED_STATE_CLASS = 'btn-toggled';
 
 export default class extends Controller {
 
     static get targets() {
-        return ["like", "dislike", "likeCount", "dislikeCount", "shareCount"];
+        return ["like", "dislike", "share", "likeCount", "dislikeCount", "shareCount"];
     }
 
     get vote_type() {
@@ -136,6 +137,24 @@ export default class extends Controller {
         if (newVote !== undefined) {
             this.vote(newVote);
             this.vote_type = `${newVote}`;
+            this.updateDisplay(newVote);
+        }
+    }
+
+    updateDisplay(newVote) {
+        switch (newVote) {
+            case LIKE:
+                this.likeTarget.classList.add(CHECKED_STATE_CLASS);
+                this.dislikeTarget.classList.remove(CHECKED_STATE_CLASS);
+                break;
+            case DISLIKE:
+                this.likeTarget.classList.remove(CHECKED_STATE_CLASS);
+                this.dislikeTarget.classList.add(CHECKED_STATE_CLASS);
+                break;
+            case NO_VOTE:
+                this.likeTarget.classList.remove(CHECKED_STATE_CLASS);
+                this.dislikeTarget.classList.remove(CHECKED_STATE_CLASS);
+                break;
         }
     }
 
@@ -163,6 +182,7 @@ export default class extends Controller {
         if (newVote !== undefined) {
             this.vote(newVote);
             this.vote_type = newVote;
+            this.updateDisplay(newVote);
         }
     }
 
@@ -170,6 +190,11 @@ export default class extends Controller {
         const newState = !this.is_shared;
         this.vote(newState ? SHARE : UNSHARE);
         this.is_shared = newState;
+        if (this.is_shared) {
+            this.shareTarget.classList.add(CHECKED_STATE_CLASS);
+        } else {
+            this.shareTarget.classList.remove(CHECKED_STATE_CLASS);
+        }
     }
 
 }

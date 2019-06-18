@@ -28,6 +28,17 @@ class TestVoteAPI(TestCase):
         self.assertEquals(self.post.likes, 1)
         self.assertEquals(self.post.votes.count(), 1)
 
+    def test_dislike_post_works(self):
+        resp = self.client.post(reverse('votable_vote'), data={
+            'vote_type': VotableVoteAPI.DISLIKE,
+            'votable_id': self.post.id,
+            'votable_type': 'post',
+        }, content_type='application/json')
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.post.refresh_from_db()
+        self.assertEquals(self.post.dislikes, 1)
+        self.assertEquals(self.post.votes.count(), 1)
+
     def test_share_post_works(self):
         resp = self.client.post(reverse('votable_vote'), data={
             'vote_type': VotableVoteAPI.SHARE,
@@ -60,6 +71,27 @@ class TestVoteAPI(TestCase):
         self.assertEquals(self.post.likes, 0)
         self.assertEquals(self.post.votes.count(), 0)
 
+    def test_un_dislike_disliked_post_works(self):
+        resp = self.client.post(reverse('votable_vote'), data={
+            'vote_type': VotableVoteAPI.DISLIKE,
+            'votable_id': self.post.id,
+            'votable_type': 'post',
+        }, content_type='application/json')
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.post.refresh_from_db()
+        self.assertEquals(self.post.dislikes, 1)
+        self.assertEquals(self.post.votes.count(), 1)
+
+        resp = self.client.post(reverse('votable_vote'), data={
+            'vote_type': VotableVoteAPI.NO_VOTE,
+            'votable_id': self.post.id,
+            'votable_type': 'post',
+        }, content_type='application/json')
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.post.refresh_from_db()
+        self.assertEquals(self.post.dislikes, 0)
+        self.assertEquals(self.post.votes.count(), 0)
+
     def test_unshare_shared_post_works(self):
         resp = self.client.post(reverse('votable_vote'), data={
             'vote_type': VotableVoteAPI.SHARE,
@@ -81,7 +113,7 @@ class TestVoteAPI(TestCase):
         self.assertEquals(self.post.shares, 0)
         self.assertEquals(self.post.votes.count(), 0)
 
-    def test_like_unliked_post_creates_nothing(self):
+    def test_unlike_unliked_post_creates_nothing(self):
         resp = self.client.post(reverse('votable_vote'), data={
             'vote_type': VotableVoteAPI.NO_VOTE,
             'post': self.post.id,
@@ -91,7 +123,17 @@ class TestVoteAPI(TestCase):
         self.assertEquals(self.post.likes, 0)
         self.assertEquals(self.post.votes.count(), 0)
 
-    def test_share_unshared_post_creates_nothing(self):
+    def test_undislike_undisliked_post_creates_nothing(self):
+        resp = self.client.post(reverse('votable_vote'), data={
+            'vote_type': VotableVoteAPI.NO_VOTE,
+            'post': self.post.id,
+            'votable_type': 'post',
+        }, content_type='application/json')
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.post.dislikes, 0)
+        self.assertEquals(self.post.votes.count(), 0)
+
+    def test_unshare_unshared_post_creates_nothing(self):
         resp = self.client.post(reverse('votable_vote'), data={
             'vote_type': VotableVoteAPI.UNSHARE,
             'post': self.post.id,

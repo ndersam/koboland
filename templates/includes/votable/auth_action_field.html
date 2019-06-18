@@ -8,29 +8,20 @@
       data-item-share-count="{{ item.shares }}"
       data-item-dislike-count="{{ item.dislikes }}"
       data-item-id="{{ item.id }}">
-                    <button class="btn-act" data-action="click->votable#like" data-target="votable.like">
-                         {% if item.vote_type == 1 %}
-                             {% include "includes/icons/angle_up.html"  with fill="#FF0000" %}
-                         {% else %}
-                             {% include "includes/icons/angle_up.html" %}
-                         {% endif %}
+                    <button class="btn-act {% if item.vote_type == 1 %}btn-toggled{% endif %}"
+                            data-action="click->votable#like" data-target="votable.like">
+                         {% include "includes/icons/angle_up.html" %}
                     </button>
                     <span data-target="votable.likeCount">{% if item.likes > 0 %}{{ item.likes }}{% endif %}</span>
-                    <button class="btn-act" data-action="click->votable#dislike" data-target="votable.dislike">
-                         {% if item.vote_type == -1 %}
-                             {% include "includes/icons/angle_down.html"  with fill="#FF0000" %}
-                         {% else %}
+                    <button class="btn-act {% if item.vote_type == -1 %}btn-toggled{% endif %}"
+                            data-action="click->votable#dislike" data-target="votable.dislike">
                              {% include "includes/icons/angle_down.html" %}
-                         {% endif %}
                     </button>
                     <span data-target="votable.dislikeCount">{% if item.dislikes > 0 %}
                         {{ item.dislikes }}{% endif %}</span>
-                    <button class="btn-act" data-action="click->votable#share">
-                         {% if item.is_shared %}
-                             {% include "includes/icons/share.html"  with fill="#FF0000" %}
-                         {% else %}
-                             {% include "includes/icons/share.html" %}
-                         {% endif %}
+                    <button class="btn-act {% if item.is_shared %}btn-toggled{% endif %}" data-target="votable.share"
+                            data-action="click->votable#share">
+                        {% include "includes/icons/share.html" %}
                     </button>
                     <span data-target="votable.shareCount">{% if item.shares > 0 %}{{ item.shares }}{% endif %}</span>
 </span>

@@ -55,7 +55,7 @@ class AuthenticationForm(DjangoAuthenticationForm):
 
 
 class PostCreateForm(forms.ModelForm):
-    files = forms.FileField(label='Select a file to upload',
+    files = forms.FileField(label='Select image/video',
                             widget=forms.ClearableFileInput(
                                 attrs={'multiple': True,
                                        'accept': ', '.join(
@@ -67,6 +67,7 @@ class PostCreateForm(forms.ModelForm):
         fields = ['content', 'topic', 'files']
         widgets = {
             'topic': forms.HiddenInput(),
+            'content': forms.Textarea(attrs={'placeholder': 'Comment'}),
         }
 
     def __init__(self, *args, **kwargs):
