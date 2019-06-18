@@ -44,7 +44,7 @@ class PostListView(ListView):
     paginate_by = 30
     template_name = 'main/post_list.html'
     context_object_name = 'posts'
-    ordering = ['-date_created']
+    ordering = ['date_created']
 
     def get_queryset(self):
         self.topic = Topic.objects.filter(id=self.kwargs['topic_id']).prefetch_related('files').first()

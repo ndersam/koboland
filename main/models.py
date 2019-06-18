@@ -3,6 +3,7 @@ import uuid
 from datetime import timedelta
 
 import mistune
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
@@ -170,7 +171,8 @@ class Post(Votable):
 
     # TODO ....
     def get_absolute_url(self):
-        return self.topic.get_absolute_url()
+        page_size = getattr(settings, 'VOTABLE_PAGE_SIZE', 30)
+        return self.topic.get_absolute_url() + f'?page={(self.topic.post_count // page_size) + 1}#{self.pseudoid}'
 
 
 class VoteQuerySet(models.QuerySet):
@@ -186,7 +188,7 @@ class VoteQuerySet(models.QuerySet):
     def create_object(self, user, votable_type, votable_id, vote_type=None, is_shared=None):
         """
         Creates and returns a Vote object.
-        Returns None if the following condition is satisifies:
+        Returns None if the following condition is satisfies:
             `(vote_type is None or vote_type == Vote.DIS_LIKE) and (is_shared is None or is_shared is False)`
         """
         kwargs = dict()

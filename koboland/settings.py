@@ -135,6 +135,8 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+VOTABLE_PAGE_SIZE = 30
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES':
         ('rest_framework.authentication.SessionAuthentication',
@@ -145,7 +147,7 @@ REST_FRAMEWORK = {
         ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_PAGINATION_CLASS':
         'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 100
+    'PAGE_SIZE': VOTABLE_PAGE_SIZE
 }
 
 SUBMISSION_MEDIA_TYPES = [

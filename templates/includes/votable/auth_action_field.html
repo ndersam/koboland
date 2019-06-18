@@ -25,4 +25,8 @@
                         {% include "includes/icons/share.html" %}
                     </button>
                     <span data-target="votable.shareCount">{% if item.shares > 0 %}{{ item.shares }}{% endif %}</span>
+                    <button class="btn-votable-round"
+                            data-action="click->votable#quote">
+                        {% include "includes/icons/comment.html" %}
+                    </button>
 </span>

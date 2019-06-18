@@ -8,6 +8,7 @@ const NO_VOTE = 0;
 const SHARE = 2;
 const UNSHARE = -2;
 const URL = '/api-auth/vote/';
+const URL_QUOTE_POST = '/submit/post/';
 
 const POST_CLASS = 'post';
 const TOPIC_CLASS = 'topic';
@@ -195,6 +196,10 @@ export default class extends Controller {
         } else {
             this.shareTarget.classList.remove(CHECKED_STATE_CLASS);
         }
+    }
+
+    quote() {
+        // Turbolinks.visit();
     }
 
 }

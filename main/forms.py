@@ -60,7 +60,7 @@ class PostCreateForm(forms.ModelForm):
                                 attrs={'multiple': True,
                                        'accept': ', '.join(
                                            getattr(settings, 'SUBMISSION_MEDIA_TYPES', ''))}),
-                            required=False)
+                            required=False, label_suffix='')
 
     class Meta:
         model = Post
@@ -80,7 +80,7 @@ class TopicCreateForm(PostCreateForm):
                             widget=forms.ClearableFileInput(
                                 attrs={'multiple': True,
                                        'accept': ', '.join(getattr(settings, 'SUBMISSION_MEDIA_TYPES', ''))}),
-                            required=False)
+                            required=False, label_suffix='')
 
     class Meta:
         model = Topic

@@ -39,7 +39,7 @@
 
     {% for post in posts %}
         <p>
-            <span class="d-block"><a href="#"><strong
+            <span class="d-block" id="{{ post.pseudoid }}"><a href="#" data-turbolinks="false"><strong
                     class="text-gray-dark">{{ post.author }}</strong></a>  {{ post.how_long_ago }}{% if post.modified %}
                 (modified){% endif %}</span>
             {% include 'includes/votable/content.html' with item=post %}
