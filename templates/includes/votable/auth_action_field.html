@@ -8,18 +8,19 @@
       data-item-share-count="{{ item.shares }}"
       data-item-dislike-count="{{ item.dislikes }}"
       data-item-id="{{ item.id }}">
-                    <button class="btn-act {% if item.vote_type == 1 %}btn-toggled{% endif %}"
+                    <button class="btn-votable-round {% if item.vote_type == 1 %}btn-toggled{% endif %}"
                             data-action="click->votable#like" data-target="votable.like">
                          {% include "includes/icons/angle_up.html" %}
                     </button>
                     <span data-target="votable.likeCount">{% if item.likes > 0 %}{{ item.likes }}{% endif %}</span>
-                    <button class="btn-act {% if item.vote_type == -1 %}btn-toggled{% endif %}"
+                    <button class="btn-votable-round {% if item.vote_type == -1 %}btn-toggled{% endif %}"
                             data-action="click->votable#dislike" data-target="votable.dislike">
                              {% include "includes/icons/angle_down.html" %}
                     </button>
                     <span data-target="votable.dislikeCount">{% if item.dislikes > 0 %}
                         {{ item.dislikes }}{% endif %}</span>
-                    <button class="btn-act {% if item.is_shared %}btn-toggled{% endif %}" data-target="votable.share"
+                    <button class="btn-votable-round {% if item.is_shared %}btn-toggled{% endif %}"
+                            data-target="votable.share"
                             data-action="click->votable#share">
                         {% include "includes/icons/share.html" %}
                     </button>
