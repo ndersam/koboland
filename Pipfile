@@ -22,6 +22,7 @@ python-magic-bin = "*"
 markdown = "*"
 pymdown-extensions = "*"
 rest-framework-generic-relations = "*"
+django-markdownx = "*"
 
 [requires]
 python_version = "3.7"

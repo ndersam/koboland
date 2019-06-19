@@ -56,8 +56,6 @@ class SubmissionMedia(models.Model):
     file = models.FileField(upload_to=get_file_path)
     content_type = models.CharField(max_length=20)
 
-    owner = models.OneToOneField('User', on_delete=models.CASCADE, related_name='display_picture', null=True)
-
     def is_image(self):
         return self.content_type.startswith('image')
 
@@ -93,9 +91,7 @@ class Votable(models.Model):
         return f'{how_long.days} day{pluralize(how_long.days)} ago'
 
     def generate_html(self):
-        html = render(self.content)
-        print(html)
-        return html
+        return render(self.content)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -123,8 +119,8 @@ class Topic(Votable):
     slug = models.SlugField(max_length=48)
     author = models.ForeignKey('User', related_name='topics', on_delete=models.SET_NULL, null=True)
     board = models.ForeignKey('Board', related_name='topics', on_delete=models.CASCADE)
-    # is_closed = models.BooleanField(default=False)
-    # is_removed = models.BooleanField(default=False)
+    is_closed = models.BooleanField(default=False)
+    is_removed = models.BooleanField(default=False)
 
     post_count = models.IntegerField(default=0)
 
@@ -301,56 +297,6 @@ class Vote(models.Model):
         super().delete(using, keep_parents)
 
 
-# class TopicVote(Vote):
-#     user = models.ForeignKey('User', related_name='topic_votes', on_delete=models.CASCADE)
-#     topic = models.ForeignKey('Topic', related_name='votes', on_delete=models.CASCADE)
-#
-#     class Meta:
-#         unique_together = ('user', 'topic', 'vote_type')
-#
-#     def save(self, force_insert=False, force_update=False, using=None,
-#              update_fields=None):
-#         if self.vote_type == self.LIKE:
-#             self.topic.likes += 1
-#         else:
-#             self.topic.dislikes += 1
-#         self.topic.save()
-#         super().save(force_insert, force_update, using, update_fields)
-#
-#     def delete(self, using=None, keep_parents=False):
-#         if self.vote_type == self.LIKE:
-#             self.topic.likes += -1
-#         else:
-#             self.topic.shares += -1
-#         self.topic.save()
-#         super().delete(using, keep_parents)
-
-
-# class PostVote(Vote):
-#     user = models.ForeignKey('User', related_name='post_votes', on_delete=models.CASCADE)
-#     post = models.ForeignKey('Post', related_name='votes', on_delete=models.CASCADE)
-#
-#     class Meta:
-#         unique_together = ('user', 'post', 'vote_type')
-#
-#     def save(self, force_insert=False, force_update=False, using=None,
-#              update_fields=None):
-#         if self.vote_type == self.LIKE:
-#             self.post.likes += 1
-#         else:
-#             self.post.shares += 1
-#         self.post.save()
-#         super().save(force_insert, force_update, using, update_fields)
-#
-#     def delete(self, using=None, keep_parents=False):
-#         if self.vote_type == self.LIKE:
-#             self.post.likes += -1
-#         else:
-#             self.post.shares += -1
-#         self.post.save()
-#         super().delete(using, keep_parents)
-
-
 class UserManager(BaseUserManager):
     def _create_user(self, email, username, password, **extra_fields):
         email = self.normalize_email(email)
@@ -396,6 +342,7 @@ class User(AbstractUser):
     is_banned = models.BooleanField(default=False)
     boards = models.ManyToManyField('Board', related_name='followers')
 
+    display_picture = models.OneToOneField(SubmissionMedia, on_delete=models.PROTECT, null=True)
     about_text = models.TextField(blank=True, null=True)
     reputation = models.IntegerField(default=0)
     objects = UserManager()
