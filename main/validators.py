@@ -1,8 +1,8 @@
 import magic
-from django.core.validators import ValidationError
+from django.core.validators import ValidationError, RegexValidator
 from django.template.defaultfilters import filesizeformat
 from django.utils.deconstruct import deconstructible
-
+from django.utils.translation import gettext_lazy as _
 
 @deconstructible
 class FileValidator:
@@ -68,3 +68,13 @@ class VoteRequestValidator:
 
         if data.get('voter') is None:
             raise ValidationError('voter is not specified')
+
+
+@deconstructible
+class UsernameValidator(RegexValidator):
+    regex = r'^[\w-]+$'
+    message = _(
+        'Enter a valid username. This value may contain only letters, '
+        'numbers, and -/_ characters.'
+    )
+    flags = 0

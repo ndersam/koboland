@@ -4,7 +4,6 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinLengthValidator
@@ -19,6 +18,7 @@ from django.utils.translation import gettext_lazy as _
 
 from main import model_fields
 from .commenting import render
+from .validators import UsernameValidator
 
 
 class Board(models.Model):
@@ -337,8 +337,8 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    # Copied from `AbstractUser` to change max_length
-    username_validator = UnicodeUsernameValidator()
+    # Copied from `AbstractUser` to change max_length, and Validator
+    username_validator = UsernameValidator()
     username = models.CharField(
         _('username'),
         max_length=16,
