@@ -4,36 +4,92 @@ from unittest import mock
 from django.test import TestCase
 from django.utils import timezone
 
-from main import factories, models
-from main.models import Post, Topic
+from main import factories
+from main.models import Post, Topic, Vote
 
 
-class TestModel(TestCase):
+class TestVote(TestCase):
 
-    def test_create_topic_sets_slug(self):
-        author = factories.UserFactory()
+    def setUp(self) -> None:
+        self.user = factories.UserFactory()
         board = factories.BoardFactory()
-        topic = models.Topic.objects.create(
-            author=author, board=board, title='New Topic', content='This is content',
-        )
-        self.assertGreater(len(topic.slug), 0)
+        self.topic = factories.TopicFactory(board=board, author=self.user, title='New Topic',
+                                            content='This is content', )
+        self.post = factories.PostFactory(author=self.user, topic=self.topic)
 
-    # def test_post_likes_works_correctly(self):
-    #     user = factories.UserFactory()
-    #     board = factories.BoardFactory()
-    #     topic = factories.TopicFactory(board=board, author=user)
-    #     post = factories.PostFactory(author=user, topic=topic)
-    #
-    #     vote = models.PostVote.objects.create(user=user, post=post, vote_type=models.Vote.LIKE)
-    #     self.assertEqual(vote.vote_type, models.Vote.LIKE)
-    #     self.assertEqual(post.votes.count(), 1)
-    #     self.assertEqual(post.likes, 1)
-    #     self.assertEqual(user.post_votes.count(), 1)
-    #
-    #     vote.delete()
-    #     self.assertEqual(post.votes.count(), 0)
-    #     self.assertEqual(post.likes, 0)
-    #     self.assertEqual(user.post_votes.count(), 0)
+    def test_like_post_works_correctly(self):
+        vote = Vote.objects.create_object(user=self.user, votable=self.post, vote_type=Vote.LIKE)
+        self.assertEqual(vote.vote_type, Vote.LIKE)
+        self.assertEqual(self.post.votes.count(), 1)
+        self.assertEqual(self.post.likes, 1)
+        self.assertEqual(self.user.vote_set.on_posts().count(), 1)
+
+        vote.delete()
+        self.assertEqual(self.post.votes.count(), 0)
+        self.assertEqual(self.post.likes, 0)
+        self.assertEqual(self.user.vote_set.on_posts().count(), 0)
+
+    def test_dislike_post_works_correctly(self):
+        vote = Vote.objects.create_object(user=self.user, votable=self.post, vote_type=Vote.DIS_LIKE)
+        self.assertEqual(vote.vote_type, Vote.DIS_LIKE)
+        self.assertEqual(self.post.votes.count(), 1)
+        self.assertEqual(self.post.dislikes, 1)
+        self.assertEqual(self.user.vote_set.on_posts().count(), 1)
+
+        vote.delete()
+        self.assertEqual(self.post.votes.count(), 0)
+        self.assertEqual(self.post.dislikes, 0)
+        self.assertEqual(self.user.vote_set.on_posts().count(), 0)
+
+    def test_share_post_works_correctly(self):
+        vote = Vote.objects.create_object(user=self.user, votable=self.post, is_shared=True)
+        self.assertTrue(vote.is_shared)
+        self.assertEquals(vote.vote_type, Vote.NO_VOTE)
+        self.assertEqual(self.post.votes.count(), 1)
+        self.assertEqual(self.post.shares, 1)
+        self.assertEqual(self.user.vote_set.on_posts().count(), 1)
+
+        vote.delete()
+        self.assertEqual(self.post.votes.count(), 0)
+        self.assertEqual(self.post.shares, 0)
+        self.assertEqual(self.user.vote_set.on_posts().count(), 0)
+
+    def test_like_topic_works_correctly(self):
+        vote = Vote.objects.create_object(user=self.user, votable=self.topic, vote_type=Vote.LIKE)
+        self.assertEqual(vote.vote_type, Vote.LIKE)
+        self.assertEqual(self.topic.votes.count(), 1)
+        self.assertEqual(self.topic.likes, 1)
+        self.assertEqual(self.user.vote_set.on_topics().count(), 1)
+
+        vote.delete()
+        self.assertEqual(self.topic.votes.count(), 0)
+        self.assertEqual(self.topic.likes, 0)
+        self.assertEqual(self.user.vote_set.on_topics().count(), 0)
+
+    def test_dislike_topic_works_correctly(self):
+        vote = Vote.objects.create_object(user=self.user, votable=self.topic, vote_type=Vote.DIS_LIKE)
+        self.assertEqual(vote.vote_type, Vote.DIS_LIKE)
+        self.assertEqual(self.topic.votes.count(), 1)
+        self.assertEqual(self.topic.dislikes, 1)
+        self.assertEqual(self.user.vote_set.on_topics().count(), 1)
+
+        vote.delete()
+        self.assertEqual(self.topic.votes.count(), 0)
+        self.assertEqual(self.topic.dislikes, 0)
+        self.assertEqual(self.user.vote_set.on_topics().count(), 0)
+
+    def test_share_topic_works_correctly(self):
+        vote = Vote.objects.create_object(user=self.user, votable=self.topic, is_shared=True)
+        self.assertTrue(vote.is_shared)
+        self.assertEqual(vote.vote_type, Vote.NO_VOTE)
+        self.assertEqual(self.topic.votes.count(), 1)
+        self.assertEqual(self.topic.shares, 1)
+        self.assertEqual(self.user.vote_set.on_topics().count(), 1)
+
+        vote.delete()
+        self.assertEqual(self.topic.votes.count(), 0)
+        self.assertEqual(self.topic.shares, 0)
+        self.assertEqual(self.user.vote_set.on_topics().count(), 0)
 
     # def test_post_shares_works_correctly(self):
     #     user = factories.UserFactory()
@@ -51,7 +107,7 @@ class TestModel(TestCase):
     #     self.assertEqual(post.votes.count(), 0)
     #     self.assertEqual(post.shares, 0)
     #     self.assertEqual(user.post_votes.count(), 0)
-
+    #
     # def test_topic_likes_works_correctly(self):
     #     user = factories.UserFactory()
     #     board = factories.BoardFactory()
@@ -67,7 +123,7 @@ class TestModel(TestCase):
     #     self.assertEqual(topic.votes.count(), 0)
     #     self.assertEqual(topic.likes, 0)
     #     self.assertEqual(user.topic_votes.count(), 0)
-
+    #
     # def test_topic_shares_works_correctly(self):
     #     user = factories.UserFactory()
     #     board = factories.BoardFactory()
@@ -83,26 +139,61 @@ class TestModel(TestCase):
     #     self.assertEqual(topic.votes.count(), 0)
     #     self.assertEqual(topic.shares, 0)
     #     self.assertEqual(user.topic_votes.count(), 0)
+    #
+    # def test_create_new_post_increases_topic_post_count(self):
+    #     user = factories.UserFactory()
+    #     board = factories.BoardFactory()
+    #     topic = factories.TopicFactory(board=board, author=user)
+    #
+    #     self.assertEqual(topic.post_count, 0)
+    #     factories.PostFactory(author=user, topic=topic)
+    #     self.assertEqual(topic.post_count, 1)
+    #
+    # def test_delete_post_decreases_topic_post_count(self):
+    #     user = factories.UserFactory()
+    #     board = factories.BoardFactory()
+    #     topic = factories.TopicFactory(board=board, author=user)
+    #
+    #     self.assertEqual(topic.post_count, 0)
+    #     post = factories.PostFactory(author=user, topic=topic)
+    #     self.assertEqual(topic.post_count, 1)
+    #     post.delete()
+    #     self.assertEqual(topic.post_count, 0)
 
-    def test_create_new_post_increases_topic_post_count(self):
-        user = factories.UserFactory()
+
+class TestTopic(TestCase):
+
+    def setUp(self) -> None:
+        self.user = factories.UserFactory()
         board = factories.BoardFactory()
-        topic = factories.TopicFactory(board=board, author=user)
+        self.topic = factories.TopicFactory(board=board, author=self.user, title='New Topic',
+                                            content='This is content', )
 
-        self.assertEqual(topic.post_count, 0)
-        factories.PostFactory(author=user, topic=topic)
-        self.assertEqual(topic.post_count, 1)
+    def test_create_topic_sets_slug(self):
+        self.assertGreater(len(self.topic.slug), 0)
+
+
+class TestPost(TestCase):
+
+    def setUp(self) -> None:
+        self.user = factories.UserFactory()
+        board = factories.BoardFactory()
+        self.topic = factories.TopicFactory(board=board, author=self.user, title='New Topic',
+                                            content='This is content', )
+
+    def test_new_post_increases_topic_post_count(self):
+        self.assertEquals(self.topic.post_count, 0)
+        factories.PostFactory(author=self.user, topic=self.topic)
+        self.assertEquals(self.topic.post_count, 1)
 
     def test_delete_post_decreases_topic_post_count(self):
-        user = factories.UserFactory()
-        board = factories.BoardFactory()
-        topic = factories.TopicFactory(board=board, author=user)
+        self.assertEquals(self.topic.post_count, 0)
+        post = factories.PostFactory(author=self.user, topic=self.topic)
+        self.assertEquals(self.topic.post_count, 1)
 
-        self.assertEqual(topic.post_count, 0)
-        post = factories.PostFactory(author=user, topic=topic)
-        self.assertEqual(topic.post_count, 1)
         post.delete()
-        self.assertEqual(topic.post_count, 0)
+        self.assertEquals(self.topic.post_count, 0)
+        self.assertEquals(self.topic.posts.count(), 0)
 
 
 # noinspection PyArgumentList

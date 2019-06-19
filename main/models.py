@@ -176,6 +176,9 @@ class Post(Votable):
 
 
 class VoteQuerySet(models.QuerySet):
+    TYPE_TOPIC = 'topic'
+    TYPE_POST = 'post'
+
     def on_topics(self):
         return self.filter(content_type__model='topic')
 
@@ -185,7 +188,7 @@ class VoteQuerySet(models.QuerySet):
     def get_object(self, voter, votable_type, votable_id):
         return self.get(object_id=votable_id, voter=voter, content_type__model=votable_type)
 
-    def create_object(self, user, votable_type, votable_id, vote_type=None, is_shared=None):
+    def create_object(self, user, votable=None, votable_type=None, votable_id=None, vote_type=None, is_shared=None):
         """
         Creates and returns a Vote object.
         Returns None if the following condition is satisfies:
@@ -193,16 +196,24 @@ class VoteQuerySet(models.QuerySet):
         """
         kwargs = dict()
 
+        if votable is None and (votable_id is None or votable_type is None):
+            raise Exception('You must pass a `votable` or a combination of `votable_id` and `votable_type`')
+
         # No point storing vote that indicates `not-shared && NO_VOTE`
         if (vote_type is None or vote_type == Vote.NO_VOTE) and (is_shared is None or is_shared is False):
-            return
+            return None
 
         if vote_type is not None:
             kwargs['vote_type'] = vote_type
         if is_shared is not None:
             kwargs['is_shared'] = is_shared
-        content_object = Topic.objects.get(id=votable_id) if votable_type == 'topic' else Post.objects.get(
-            id=votable_id)
+
+        if votable:
+            content_object = votable
+            votable_id = votable.id
+        else:
+            content_object = Topic.objects.get(id=votable_id) if votable_type == self.TYPE_TOPIC else Post.objects.get(
+                id=votable_id)
         return self.create(object_id=votable_id, content_object=content_object, voter=user, **kwargs)
 
 
