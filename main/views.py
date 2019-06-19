@@ -12,8 +12,8 @@ from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
+from .commenting import quote_post
 from .forms import UserCreationForm, PostCreateForm, TopicCreateForm
-from .markdown import quote_post
 from .models import Topic, Board, Vote, Post
 
 logger = logging.getLogger(__name__)

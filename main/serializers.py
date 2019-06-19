@@ -1,7 +1,6 @@
-from generic_relations.relations import GenericRelatedField
 from rest_framework import serializers
 
-from main.models import User, Post, Topic, Board, Vote
+from main.models import User, Post, Topic, Board
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -33,20 +32,20 @@ class AuxTopicSerializer(serializers.ModelSerializer):
         model = Topic
         fields = ('id',)
 
-
-class VoteSerializer(serializers.ModelSerializer):
-    voter = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
-    content_object = GenericRelatedField({
-        Topic: serializers.HyperlinkedRelatedField(
-            queryset=Topic.objects.all(),
-            view_name='topic-detail',
-        ),
-        Post: serializers.HyperlinkedRelatedField(
-            queryset=Post.objects.all(),
-            view_name='post-detail',
-        ),
-    })
-
-    class Meta:
-        model = Vote
-        fields = ('vote_type', 'voter', 'content_object')
+# from generic_relations.relations import GenericRelatedField
+# class VoteSerializer(serializers.ModelSerializer):
+#     voter = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+#     content_object = GenericRelatedField({
+#         Topic: serializers.HyperlinkedRelatedField(
+#             queryset=Topic.objects.all(),
+#             view_name='topic-detail',
+#         ),
+#         Post: serializers.HyperlinkedRelatedField(
+#             queryset=Post.objects.all(),
+#             view_name='post-detail',
+#         ),
+#     })
+#
+#     class Meta:
+#         model = Vote
+#         fields = ('vote_type', 'voter', 'content_object')

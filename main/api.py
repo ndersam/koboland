@@ -34,7 +34,8 @@ class VotableVoteAPI(APIView):
     @classmethod
     def create_object(cls, user, votable_type, votable_id, vote_type=None, is_shared=None):
         try:
-            return Vote.objects.create_object(user, votable_type, votable_id, vote_type, is_shared)
+            return Vote.objects.create_object(user, votable_type=votable_type, votable_id=votable_id,
+                                              vote_type=vote_type, is_shared=is_shared)
         except Exception:
             raise Http404
 

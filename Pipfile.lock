@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "1d72f44ec3606466db873adc67b842abb3c8aa3619299a1a48c5cc27dfe61399"
+            "sha256": "e4b3763114e0f35f498c37e989f84d428b31b90c24e276d68140017a0b798e52"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -120,13 +120,6 @@
             "index": "pypi",
             "version": "==2.2.2"
         },
-        "django-fernet-fields": {
-            "hashes": [
-                "sha256:7f7e03c86d9473a42031ebade2b15be1484aad18ef5576ddab156c4667e04c4a"
-            ],
-            "index": "pypi",
-            "version": "==0.6"
-        },
         "django-filter": {
             "hashes": [
                 "sha256:3dafb7d2810790498895c22a1f31b2375795910680ac9c1432821cbedb1e176d",
@@ -134,14 +127,6 @@
             ],
             "index": "pypi",
             "version": "==2.1.0"
-        },
-        "django-markdownx": {
-            "hashes": [
-                "sha256:285a40ab405830c0a049e05f3dafabb2c195146f577b824913555aa62512b90d",
-                "sha256:d6e706c0b1329b23d6dcaa8754e5921fa2531711dc5afeec4ed3c73a8cb6a178"
-            ],
-            "index": "pypi",
-            "version": "==2.0.28"
         },
         "django-widget-tweaks": {
             "hashes": [
@@ -275,14 +260,6 @@
                 "sha256:d747dd3d23d77ef44c6a3526e274af6efeb0a6f1afd5a69ba4d5be4098c8e141"
             ],
             "version": "==2019.1"
-        },
-        "rest-framework-generic-relations": {
-            "hashes": [
-                "sha256:3fbcec76623ff0571b6da2c3fd93af0f7971b0a61b71fa79e2422ee1784a7121",
-                "sha256:4ff1120aad417eb3e4a90bd719b5aa0b6704338a62ce08a8bb09fec923f31872"
-            ],
-            "index": "pypi",
-            "version": "==1.2.1"
         },
         "selenium": {
             "hashes": [

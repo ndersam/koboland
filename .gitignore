@@ -154,4 +154,4 @@ static/node_modules/
 
 media/
 ./static/src/themify-icons/
-static\src\themify-icons
+static/src/themify-icons
