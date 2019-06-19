@@ -72,6 +72,7 @@ class Votable(models.Model):
     dislikes = models.IntegerField(default=0)
     shares = models.IntegerField(default=0)
     score = models.IntegerField(default=0)
+    flags = models.IntegerField(default=0)
 
     votes = GenericRelation('Vote')
 
