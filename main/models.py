@@ -16,8 +16,8 @@ from django.utils.crypto import get_random_string
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
+from commenting.utils import render_html
 from main import model_fields
-from .commenting import render
 from .validators import UsernameValidator
 
 
@@ -92,7 +92,7 @@ class Votable(models.Model):
         return f'{how_long.days} day{pluralize(how_long.days)} ago'
 
     def generate_html(self):
-        return render(self.content)
+        return render_html(self.content)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):

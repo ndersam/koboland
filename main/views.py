@@ -12,7 +12,7 @@ from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
-from .commenting import quote_votable
+from commenting.utils import quote_votable
 from .forms import UserCreationForm, PostCreateForm, TopicCreateForm
 from .models import Topic, Board, Vote, Post
 

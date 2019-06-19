@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     # 'generic_relations',
     'widget_tweaks',
     'rest_framework',
+    'commenting.apps.CommentingConfig',
     'main.apps.MainConfig'
 ]
 
