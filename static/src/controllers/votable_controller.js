@@ -203,8 +203,11 @@ export default class extends Controller {
     }
 
     quote() {
-        console.log(this.topicTargets);
-        Turbolinks.visit(`${URL_POST}?topic=${this.element.getAttribute('data-topic-id')}&post=${this.item}`);
+        if (this.votable_type === TOPIC_CLASS) {
+            Turbolinks.visit(`${URL_POST}?topic=${this.item}&quote_topic=1`);
+        } else {
+            Turbolinks.visit(`${URL_POST}?topic=${this.element.getAttribute('data-topic-id')}&post=${this.item}`);
+        }
     }
 
 }

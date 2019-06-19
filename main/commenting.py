@@ -40,8 +40,8 @@ def clean_quoted_content(content: str):
 
 
 # TODO.... remove image and videos from content
-def quote_post(post):
-    return f'<<<[[{post.author}|{post.id}]]\n{clean_quoted_content(post.content)}<<<'
+def quote_votable(votable):
+    return f'<<<[[{votable.author}|{votable.id}]]\n{clean_quoted_content(votable.content)}<<<\n'
 
 
 if __name__ == '__main__':

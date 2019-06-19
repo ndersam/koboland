@@ -12,7 +12,7 @@ from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
-from .commenting import quote_post
+from .commenting import quote_votable
 from .forms import UserCreationForm, PostCreateForm, TopicCreateForm
 from .models import Topic, Board, Vote, Post
 
@@ -153,13 +153,16 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         if self.request.GET:
             topic_id = self.request.GET.get('topic')
             post_id = self.request.GET.get('post')
+            should_quote_topic = self.request.GET.get('quote_topic')
             try:
                 if topic_id:
                     self.topic = Topic.objects.get(id=topic_id)
                     kwargs['topic'] = topic_id
                 if post_id:
                     post = Post.objects.get(id=post_id)
-                    kwargs['post'] = quote_post(post)
+                    kwargs['post'] = quote_votable(post)
+                if should_quote_topic and should_quote_topic == '1':
+                    kwargs['post'] = quote_votable(self.topic)
             except (Topic.DoesNotExist, Post.DoesNotExist):
                 pass
         return kwargs
