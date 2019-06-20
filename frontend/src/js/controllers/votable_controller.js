@@ -1,6 +1,6 @@
 import {Controller} from "stimulus";
 
-const Utils = require('../js/utils');
+const Utils = require('../utils');
 
 const LIKE = 1;
 const DISLIKE = -1;

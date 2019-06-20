@@ -155,3 +155,6 @@ static/node_modules/
 media/
 ./static/src/themify-icons/
 static/src/themify-icons
+
+frontend/node_modules/
+frontend/themify-icons/

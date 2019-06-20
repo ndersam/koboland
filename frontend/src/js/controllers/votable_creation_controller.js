@@ -1,6 +1,6 @@
 import {Controller} from "stimulus";
 
-const Utils = require('../js/utils');
+const Utils = require('../utils');
 
 const POST_URL = '/api-auth/submit/post/';
 const TOPIC_URL = '/api-auth/submit/topic/';

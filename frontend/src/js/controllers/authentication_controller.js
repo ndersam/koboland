@@ -1,6 +1,6 @@
 import {Controller} from "stimulus";
 
-const Utils = require('../js/utils');
+const Utils = require('../utils');
 
 
 const URL_LOGOUT = '/logout/';

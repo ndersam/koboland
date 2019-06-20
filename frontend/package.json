@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:js": "npx webpack --config webpack.config.js",
-    "build:css": "postcss src/pcss/styles.pcss -o dist/css/styles.css"
+    "build:css": "postcss src/pcss/styles.pcss -o ../static/dist/css/styles.css"
   },
   "author": "",
   "license": "ISC",
