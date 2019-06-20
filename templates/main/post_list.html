@@ -20,8 +20,9 @@
     </div>
 
     {% if user.is_authenticated %}
-        <form action="{% url 'post_create' %}" method="POST" data-controller="votable-creation" data-item-class="post"
-              class="form-votable"
+        <form action="{% url 'post_create' %}" method="POST" data-controller="votable-creation votable-form-validation"
+              data-item-class="post"
+              class="form-votable" data-validate=""
               enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.non_field_errors }}
@@ -29,8 +30,8 @@
                 {{ field }}
             {% endfor %}
             {% include "includes/form_field.html" with field=form.content %}
-            {% include "includes/form_field.html" with field=form.files %}
-            <button type="submit" class="btn btn-primary">
+            {% include "includes/form_field.html" with field=form.files label='true' %}
+            <button type="submit" class="btn btn-primary" disabled>
                 Post
             </button>
             <button class="btn btn-info">

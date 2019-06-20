@@ -85,6 +85,10 @@ class TopicCreateForm(PostCreateForm):
     class Meta:
         model = Topic
         fields = ['content', 'board', 'files', 'title']
+        widgets = {
+            'content': forms.Textarea(attrs={'placeholder': 'Content'}),
+            'title': forms.TextInput(attrs={'placeholder': 'Title'}),
+        }
 
     # def __init__(self, *args, **kwargs):
     #     self.author = kwargs.pop('author')

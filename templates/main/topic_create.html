@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
 
 {% block content %}
+    <br>
     <h2>New Topic</h2>
+    <br>
     <form class="form-votable"
-          action="{% url 'topic_create' %}" method="POST" data-controller="votable-creation" data-item-class="topic"
+          action="{% url 'topic_create' %}" method="POST" data-controller="votable-creation votable-form-validation"
+          data-item-class="topic"
+          data-validate=""
           enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.non_field_errors }}
@@ -13,8 +17,8 @@
         {% include "includes/form_field.html" with field=form.board %}
         {% include "includes/form_field.html" with field=form.title %}
         {% include "includes/form_field.html" with field=form.content %}
-        {% include "includes/form_field.html" with field=form.files %}
-        <button type="submit" class="btn btn-primary">
+        {% include "includes/form_field.html" with field=form.files label='true' %}
+        <button type="submit" class="btn btn-primary" disabled>
             Create
         </button>
     </form>
