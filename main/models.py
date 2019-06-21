@@ -17,20 +17,12 @@ from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from commenting.utils import render_html
-from main import model_fields
+from koboland_utils import fields as model_fields
 from .validators import UsernameValidator
+from koboland_utils import models as koboland_models
 
 
 class Board(models.Model):
-    # NEWEST = 10
-    # MOST_VOTES = 20
-    # MOST_COMMENTS = 30
-    # BOARD_SORT = (
-    #     (NEWEST, 'Newest'),
-    #     (MOST_COMMENTS, 'Most Posts'),
-    #     (MOST_VOTES, 'Most Votes'),
-    # )
-
     name = model_fields.CICharField(max_length=32, primary_key=True)
     description = models.TextField(blank=True)
     moderators = models.ManyToManyField('User', related_name='moderates_on')
@@ -60,12 +52,12 @@ class SubmissionMedia(models.Model):
         return self.content_type.startswith('image')
 
 
-class Votable(models.Model):
+class Votable(koboland_models.BaseModel):
     content = models.TextField(blank=True)
     content_html = models.TextField(blank=True)
     modified = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
-    pseudoid = models.CharField(default='', max_length=12, unique=True, editable=False)
+    # pseudoid = models.CharField(default='', max_length=12, unique=True, editable=False)
     files = models.ManyToManyField('SubmissionMedia')
 
     likes = models.IntegerField(default=0)
@@ -97,22 +89,23 @@ class Votable(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         self.content_html = self.generate_html()
+        super().save(force_insert, force_update, using, update_fields)
 
-        if len(self.pseudoid) == 0:
-            self.pseudoid = get_random_string()
-        success = False
-        failures = 0
-        while not success:
-            try:
-                super().save(force_insert, force_update, using, update_fields)
-            except IntegrityError as e:
-                failures += 1
-                if failures > 5:
-                    raise e
-                else:
-                    self.pseudoid = get_random_string()
-            else:
-                success = True
+        # if len(self.pseudoid) == 0:
+        #     self.pseudoid = get_random_string()
+        # success = False
+        # failures = 0
+        # while not success:
+        #     try:
+        #
+        #     except IntegrityError as e:
+        #         failures += 1
+        #         if failures > 5:
+        #             raise e
+        #         else:
+        #             self.pseudoid = get_random_string()
+        #     else:
+        #         success = True
 
 
 class Topic(Votable):

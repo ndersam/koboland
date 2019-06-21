@@ -36,11 +36,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
-    # 'generic_relations',
     'widget_tweaks',
     'rest_framework',
+    'channels',
+    'koboland_utils.apps.KobolandUtilsConfig',
     'commenting.apps.CommentingConfig',
-    'main.apps.MainConfig'
+    'main.apps.MainConfig',
+    'chat.apps.ChatConfig',
 ]
 
 MIDDLEWARE = [
@@ -160,3 +162,13 @@ SUBMISSION_MEDIA_TYPES = [
     'image/svg+xml', 'image/tiff',
     'image/webp', 'image/bmp'
 ]
+
+ASGI_APPLICATION = 'koboland.routing.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
+    },
+}

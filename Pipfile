@@ -20,6 +20,9 @@ python-magic-bin = "*"
 pymdown-extensions = "*"
 djangorestframework = "*"
 markdown = "*"
+channels = "*"
+channels-redis = "*"
+pypiwin32 = "*"
 
 [requires]
 python_version = "3.7"
