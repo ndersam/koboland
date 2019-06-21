@@ -75,3 +75,13 @@ class TestTopicSubmitPage(TestCase):
     def test_topic_submit_page_requires_login(self):
         resp = self.client.get(reverse('topic_create_view'))
         self.assertRedirects(resp, f"{reverse('login')}?next={reverse('topic_create_view')}")
+
+
+class TestUserPage(TestCase):
+
+    def test_user_page_loads_correctly(self):
+        user = factories.UserFactory(username='testUser')
+        self.client.force_login(user)
+        resp = self.client.get(reverse('user', kwargs={'username': user.username}))
+        self.assertTrue(resp.context['user'].is_me)
+        self.assertTemplateUsed(resp, 'main/user.html')

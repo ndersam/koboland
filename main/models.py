@@ -353,6 +353,8 @@ class User(AbstractUser):
     email = models.EmailField('email address', unique=True)
     is_banned = models.BooleanField(default=False)
     boards = models.ManyToManyField('Board', related_name='followers')
+    topics_following = models.ManyToManyField('Topic', related_name='followers')
+    followers = models.ManyToManyField('User', related_name='following')
 
     display_picture = models.OneToOneField(SubmissionMedia, on_delete=models.PROTECT, null=True)
     about_text = models.TextField(blank=True, null=True)

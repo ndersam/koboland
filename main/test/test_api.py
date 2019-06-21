@@ -365,3 +365,191 @@ class TestTopicCreateAPI(TestCase):
         self.assertEquals(self.board.topics.count(), 0)
         self.assertEquals(self.board.topics.count(), 0)
         self.assertEquals(self.user.topics.count(), 0)
+
+
+class TestFollowTopicAPI(TestCase):
+    def setUp(self) -> None:
+        self.user = factories.UserFactory(username='testUser')
+        self.board = factories.BoardFactory(name='testBoard')
+        self.topic = factories.TopicFactory(board=self.board, title='This is my title', content='This is content')
+        self.client.force_login(self.user)
+
+    def test_follow_topic_works(self):
+        self.assertEquals(self.user.topics_following.count(), 0)
+        resp = self.client.post(reverse('follow_topic'), data={
+            'follow': True,
+            'topic': self.topic.id,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.topics_following.count(), 1)
+
+    def test_unfollow_followed_topic_works(self):
+        self.assertEquals(self.user.topics_following.count(), 0)
+        self.client.post(reverse('follow_topic'), data={
+            'follow': True,
+            'topic': self.topic.id,
+        })
+        self.assertEquals(self.user.topics_following.count(), 1)
+
+        resp = self.client.post(reverse('follow_topic'), data={
+            'follow': False,
+            'topic': self.topic.id,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.topics_following.count(), 0)
+
+    def test_follow_followed_topic_returns_400(self):
+        self.assertEquals(self.user.topics_following.count(), 0)
+        resp = self.client.post(reverse('follow_topic'), data={
+            'follow': True,
+            'topic': self.topic.id,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.topics_following.count(), 1)
+
+        resp = self.client.post(reverse('follow_topic'), data={
+            'follow': True,
+            'topic': self.topic.id,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.user.topics_following.count(), 1)
+
+    def test_unfollow_not_followed_topic_returns_400(self):
+        self.assertEquals(self.user.topics_following.count(), 0)
+        resp = self.client.post(reverse('follow_topic'), data={
+            'follow': False,
+            'topic': self.topic.id,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.user.topics_following.count(), 0)
+
+
+class TestFollowUserAPI(TestCase):
+    def setUp(self) -> None:
+        self.user = factories.UserFactory(username='testUser')
+        self.friend = factories.UserFactory(username='friendUser', email='random@email.com')
+        self.client.force_login(self.user)
+
+    def test_follow_user_works(self):
+        self.assertEquals(self.user.following.count(), 0)
+        resp = self.client.post(reverse('follow_user'), data={
+            'follow': True,
+            'user': self.friend.username,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.following.count(), 1)
+
+    def test_unfollow_followed_user_works(self):
+        self.assertEquals(self.user.following.count(), 0)
+        self.client.post(reverse('follow_user'), data={
+            'follow': True,
+            'user': self.friend.username,
+        })
+        self.assertEquals(self.user.following.count(), 1)
+
+        resp = self.client.post(reverse('follow_user'), data={
+            'follow': False,
+            'user': self.friend.username,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.following.count(), 0)
+
+    def test_follow_followed_user_returns_400(self):
+        self.assertEquals(self.user.following.count(), 0)
+        resp = self.client.post(reverse('follow_user'), data={
+            'follow': True,
+            'user': self.friend.username,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.following.count(), 1)
+
+        resp = self.client.post(reverse('follow_user'), data={
+            'follow': True,
+            'user': self.friend.username,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.user.following.count(), 1)
+
+    def test_unfollow_not_followed_user_returns_400(self):
+        self.assertEquals(self.user.following.count(), 0)
+        resp = self.client.post(reverse('follow_user'), data={
+            'follow': False,
+            'user': self.friend.username,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.user.following.count(), 0)
+
+    def test_follow_oneself_returns_400(self):
+        self.assertEquals(self.user.following.count(), 0)
+        resp = self.client.post(reverse('follow_user'), data={
+            'follow': True,
+            'user': self.user.username,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.user.following.count(), 0)
+
+    def test_unfollow_oneself_returns_400(self):
+        self.assertEquals(self.user.following.count(), 0)
+        resp = self.client.post(reverse('follow_user'), data={
+            'follow': False,
+            'user': self.user.username,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.user.following.count(), 0)
+
+
+class TestFollowBoardAPI(TestCase):
+    def setUp(self) -> None:
+        self.user = factories.UserFactory(username='testUser')
+        self.board = factories.BoardFactory(name='testBoard')
+        self.client.force_login(self.user)
+
+    def test_follow_board_works(self):
+        self.assertEquals(self.user.boards.count(), 0)
+        resp = self.client.post(reverse('follow_board'), data={
+            'follow': True,
+            'board': self.board.name,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.boards.count(), 1)
+
+    def test_unfollow_followed_board_works(self):
+        self.assertEquals(self.user.boards.count(), 0)
+        resp = self.client.post(reverse('follow_board'), data={
+            'follow': True,
+            'board': self.board.name,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.boards.count(), 1)
+
+        resp = self.client.post(reverse('follow_board'), data={
+            'follow': False,
+            'board': self.board.name,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.boards.count(), 0)
+
+    def test_follow_followed_board_returns_400(self):
+        self.assertEquals(self.user.boards.count(), 0)
+        resp = self.client.post(reverse('follow_board'), data={
+            'follow': True,
+            'board': self.board.name,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(self.user.boards.count(), 1)
+
+        resp = self.client.post(reverse('follow_board'), data={
+            'follow': True,
+            'board': self.board.name,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.user.boards.count(), 1)
+
+    def test_unfollow_not_followed_user_returns_400(self):
+        self.assertEquals(self.user.boards.count(), 0)
+        resp = self.client.post(reverse('follow_board'), data={
+            'follow': False,
+            'board': self.board.name,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEquals(self.user.boards.count(), 0)

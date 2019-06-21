@@ -3,10 +3,11 @@ from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.urls import path, re_path
 
-from .api import PostCreateAPI, TopicCreateAPI, VotableVoteAPI
+from .api import PostCreateAPI, TopicCreateAPI, VotableVoteAPI, AbstractFollowTopicAPI, AbstractFollowBoardAPI, \
+    AbstractFollowUserAPI
 from .forms import AuthenticationForm
 from .views import (SignupView, PostListView, TopicListView, HomeListView,
-                    TopicCreateView, logout_view, PostCreateView)
+                    TopicCreateView, logout_view, PostCreateView, UserView)
 
 urlpatterns = [
     path('', HomeListView.as_view(), name='home'),
@@ -20,8 +21,12 @@ urlpatterns = [
     path('api-auth/vote/', VotableVoteAPI.as_view(), name='votable_vote'),
     path('api-auth/submit/post/', PostCreateAPI.as_view(), name='post_create'),
     path('api-auth/submit/topic/', TopicCreateAPI.as_view(), name='topic_create'),
+    path('api-auth/follow/topic/', AbstractFollowTopicAPI.as_view(), name='follow_topic'),
+    path('api-auth/follow/user', AbstractFollowUserAPI.as_view(), name='follow_user'),
+    path('api-auth/follow/board', AbstractFollowBoardAPI.as_view(), name='follow_board'),
     path('submit/', TopicCreateView.as_view(), name='topic_create_view'),
-    path('comment/', PostCreateView.as_view(), name='post_create_view')
+    path('comment/', PostCreateView.as_view(), name='post_create_view'),
+    path('user/<slug:username>/', UserView.as_view(), name='user'),
 ]
 
 if settings.DEBUG:  # new

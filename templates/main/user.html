@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    {% if user.is_banned %}
+        <p>This user account has been banned.</p>
+    {% else %}
+        <h4>{{ user.username }}</h4>
+
+        {% if not user.is_me %}
+            <button>Follow</button>
+        {% endif %}
+
+        {% if user.about_text %}
+            {{ user.about_text }}
+        {% endif %}
+        {% if user.display_picture %}
+            <img alt="display picture" src="{{ user.display_picture.file.url }}">
+        {% endif %}
+    {% endif %}
+{% endblock content %}

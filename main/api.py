@@ -1,13 +1,15 @@
 from django.conf import settings
 from django.core.validators import ValidationError
+from django.db.models import Manager
 from django.http import Http404, HttpResponseRedirect
+from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from main.validators import FileValidator, VoteRequestValidator
-from .models import Post, Topic, Vote
+from .models import Post, Topic, Vote, User, Board
 from .serializers import TopicSerializer, PostSerializer
 
 
@@ -125,3 +127,116 @@ class TopicCreateAPI(PostCreateAPI):
     @classmethod
     def serialize(cls, data):
         return TopicSerializer(data=data)
+
+
+class AbstractFollowAPI(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    """
+    Key that identifies a `followable`. 
+    A `followable` is an item a user wises to follow.
+        e.g 'user', 'topic' or 'board'
+    """
+    followable_key = None
+
+    """
+    Many-To-Many Field in `User` object to which a followable is added. 
+        e.g. `topics_following` for `topic` ==> user.topics_following
+             `boards` for `board` ==> user.boards
+             `following` for `user` ==> user.following
+    """
+    follow_set_key = None
+
+    """
+    Primary key that identifies followable
+    """
+    primary_key = None
+
+    ERRORS = {
+        'missing': _('%s parameter not set'),
+        'following': _('%s is already being followed.'),
+        'user': _('User cannot follow oneself'),
+    }
+
+    def post(self, request, format=None):
+        data = request.POST.copy()
+        data['follow'] = True if data.get('follow', True).lower() == 'true' else False
+        manager = self.get_object_manager()
+
+        if self.followable_key is None:
+            raise NotImplementedError(
+                'Class `followable_key` attribute not set'
+            )
+        if self.follow_set_key is None:
+            raise NotImplementedError(
+                'Class `follow_set_key` attribute not set'
+            )
+        if self.primary_key is None:
+            return NotImplementedError(
+                'Class `primary_key` attribute not set'
+            )
+
+        if data[self.followable_key]:
+            try:
+                kwargs = {self.primary_key: data[self.followable_key]}
+                followable = manager.get(**kwargs)
+                follow_set = getattr(request.user, self.follow_set_key, None)
+
+                if follow_set is None:
+                    raise Exception(f'Illegal key `{self.follow_set_key}` on User object')
+
+                # Prevent User from following himself/herself
+                if isinstance(followable, User) and followable == request.user:
+                    return Response({'errors': self.ERRORS['user']}, status=status.HTTP_400_BAD_REQUEST)
+
+                existing = follow_set.filter(**kwargs)
+                if len(existing) == 0 and data['follow']:
+                    follow_set.add(followable)
+                    return Response(status=status.HTTP_200_OK)
+                elif len(existing) == 1 and not data['follow']:
+                    follow_set.remove(followable)
+                    return Response(status=status.HTTP_200_OK)
+
+                errors = self.ERRORS['following'] % self.followable_key
+            except Topic.DoesNotExist as e:
+                errors = str(e)
+        else:
+            errors = self.ERRORS['missing'] % self.followable_key
+        return Response({'errors': errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    @classmethod
+    def get_object_manager(cls) -> Manager:
+        raise NotImplementedError(
+            'You gotta implement this'
+        )
+
+
+class AbstractFollowTopicAPI(AbstractFollowAPI):
+    queryset = Topic.objects.all()
+    # permission_classes = FollowMixin.permission_classes
+    followable_key = 'topic'
+    follow_set_key = 'topics_following'
+    primary_key = 'id'
+
+    def get_object_manager(cls) -> Manager:
+        return Topic.objects
+
+
+class AbstractFollowUserAPI(AbstractFollowAPI):
+    queryset = User.objects.all()
+    followable_key = 'user'
+    follow_set_key = 'following'
+    primary_key = 'username'
+
+    def get_object_manager(cls) -> Manager:
+        return User.objects
+
+
+class AbstractFollowBoardAPI(AbstractFollowAPI):
+    queryset = Board.objects.all()
+    followable_key = 'board'
+    follow_set_key = 'boards'
+    primary_key = 'name'
+
+    def get_object_manager(cls) -> Manager:
+        return Board.objects

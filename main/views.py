@@ -8,13 +8,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
+from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
 from commenting.utils import quote_votable
 from .forms import UserCreationForm, PostCreateForm, TopicCreateForm
-from .models import Topic, Board, Vote, Post
+from .models import Topic, Board, Vote, Post, User
 
 logger = logging.getLogger(__name__)
 
@@ -185,3 +186,13 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         if self.topic is None:
             raise Http404
         return resp
+
+
+class UserView(DetailView):
+    template_name = 'main/user.html'
+    model = User
+
+    def get_object(self, queryset=None):
+        user = self.model.objects.get(username=self.kwargs.get('username'))
+        user.is_me = user == self.request.user
+        return user
