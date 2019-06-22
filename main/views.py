@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Exists, OuterRef, Subquery
 from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -49,22 +50,28 @@ class PostListView(ListView):
     ordering = ['date_created']
 
     def get_queryset(self):
-        self.topic = Topic.objects.filter(id=self.kwargs['topic_id']).prefetch_related('files').first()
+        topics = Topic.objects.filter(id=self.kwargs['topic_id']).prefetch_related('files')
         if self.request.user.is_authenticated:
-            votes = self.topic.votes.filter(voter=self.request.user)
-            for vote in votes:
-                if vote.vote_type in [Vote.LIKE, Vote.DIS_LIKE, Vote.NO_VOTE]:
-                    self.topic.vote_type = vote.vote_type
-                self.topic.is_shared = vote.is_shared
+            # Mark topic as is_shared if user has shared topic and set vote_type for [LIKE, DISLIKE or NO_VOTE]
+            topics = topics.annotate(is_shared=Exists(
+                Vote.objects.filter(object_id=OuterRef('id'), is_shared=True, voter=self.request.user,
+                                    content_type__model='topic')),
+                vote_type=Subquery(
+                    Vote.objects.filter(object_id=OuterRef('id'), voter=self.request.user).values(
+                        'vote_type')[:1])
+            )
+        self.topic = topics.first()
 
         posts = self.topic.posts.all().prefetch_related('votes', 'files', 'author').order_by(*self.ordering)
         if self.request.user.is_authenticated:
-            for post in posts:
-                votes = post.votes.filter(voter=self.request.user)
-                for vote in votes:
-                    if vote.vote_type in [Vote.LIKE, Vote.DIS_LIKE, Vote.NO_VOTE]:
-                        post.vote_type = vote.vote_type
-                    post.is_shared = vote.is_shared
+            # Mark every post as is_shared if user has shared the post and set vote_type for [LIKE, DISLIKE or NO_VOTE]
+            posts = posts.annotate(is_shared=Exists(
+                Vote.objects.filter(object_id=OuterRef('id'), is_shared=True, voter=self.request.user,
+                                    content_type__model='post')),
+                                   vote_type=Subquery(
+                                       Vote.objects.filter(object_id=OuterRef('id'), voter=self.request.user).values(
+                                           'vote_type')[:1])
+                                   )
         return posts
 
     def get_context_data(self, *, object_list=None, **kwargs):

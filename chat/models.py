@@ -3,11 +3,28 @@ from koboland import helpers
 from main.models import User
 
 
+# class OneOnOneRoom(models.Model):
+#     user1 = models.ForeignKey(User, on_delete=models.CASCADE)
+#     user2 = models.ForeignKey(User, on_delete=models.CASCADE)
+#
+#     class Meta:
+#         unique_together = ['user1', 'user2']
+
+
 class MessageThread(models.Model):
+
+    PRIVATE = 10
+    GROUP = 20
+    PUBLIC_ROOM = 30
+    TYPES = (
+        (PRIVATE, "Private"), (GROUP, "Group"), (PUBLIC_ROOM, "Public Room"),
+    )
+
     hash_id = models.CharField(max_length=32, default=helpers.create_hash, unique=True)
     clients = models.ManyToManyField(User, blank=True)
     last_message = models.ForeignKey('Message', null=True, blank=True, on_delete=models.SET_NULL)
-    title = models.CharField(max_length=64)
+    name = models.CharField(max_length=64)
+    thread_type = models.IntegerField(choices=TYPES, default=PRIVATE)
 
     def mark_read(self, user):
         UnreadReceipt.objects.filter(recipient=user, thread=self).delete()
