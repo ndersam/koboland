@@ -5,7 +5,7 @@
     <div data-target="votable.topic" data-item-id="{{ topic.id }}">
         <h2>{{ topic.title }}</h2>
         <p>
-            <span class="d-block"><a href="#"><strong
+            <span class="d-block"><a  href="{{ topic.author.get_absolute_url }}"><strong
                     class="text-gray-dark">{{ topic.author }} </strong></a>   {{ topic.how_long_ago }}
                 {% if topic.modified %}(modified){% endif %}</span>
 
@@ -43,8 +43,8 @@
 
     <div class="comments">
         {% for post in posts %}
-            <div class="uc-wrapper" id="{{ post.pseudoid }}">
-            <span class="d-block meta-time"><a class="author" href="#"
+            <div class="uc-wrapper" id="{{ post.id }}">
+            <span class="d-block meta-time"><a class="author" href="{{ post.author.get_absolute_url }}"
                                                data-turbolinks="false">{{ post.author }}</a>  {{ post.how_long_ago }}
                 {% if post.modified %}
                     (modified){% endif %}</span>

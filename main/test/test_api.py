@@ -379,7 +379,7 @@ class TestFollowTopicAPI(TestCase):
         resp = self.client.post(reverse('follow_topic'), data={
             'follow': True,
             'topic': self.topic.id,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.topics_following.count(), 1)
 
@@ -388,13 +388,13 @@ class TestFollowTopicAPI(TestCase):
         self.client.post(reverse('follow_topic'), data={
             'follow': True,
             'topic': self.topic.id,
-        })
+        }, content_type='application/json')
         self.assertEquals(self.user.topics_following.count(), 1)
 
         resp = self.client.post(reverse('follow_topic'), data={
             'follow': False,
             'topic': self.topic.id,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.topics_following.count(), 0)
 
@@ -403,14 +403,14 @@ class TestFollowTopicAPI(TestCase):
         resp = self.client.post(reverse('follow_topic'), data={
             'follow': True,
             'topic': self.topic.id,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.topics_following.count(), 1)
 
         resp = self.client.post(reverse('follow_topic'), data={
             'follow': True,
             'topic': self.topic.id,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(self.user.topics_following.count(), 1)
 
@@ -419,7 +419,7 @@ class TestFollowTopicAPI(TestCase):
         resp = self.client.post(reverse('follow_topic'), data={
             'follow': False,
             'topic': self.topic.id,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(self.user.topics_following.count(), 0)
 
@@ -435,7 +435,7 @@ class TestFollowUserAPI(TestCase):
         resp = self.client.post(reverse('follow_user'), data={
             'follow': True,
             'user': self.friend.username,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.following.count(), 1)
 
@@ -444,13 +444,13 @@ class TestFollowUserAPI(TestCase):
         self.client.post(reverse('follow_user'), data={
             'follow': True,
             'user': self.friend.username,
-        })
+        }, content_type='application/json')
         self.assertEquals(self.user.following.count(), 1)
 
         resp = self.client.post(reverse('follow_user'), data={
             'follow': False,
             'user': self.friend.username,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.following.count(), 0)
 
@@ -459,14 +459,14 @@ class TestFollowUserAPI(TestCase):
         resp = self.client.post(reverse('follow_user'), data={
             'follow': True,
             'user': self.friend.username,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.following.count(), 1)
 
         resp = self.client.post(reverse('follow_user'), data={
             'follow': True,
             'user': self.friend.username,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(self.user.following.count(), 1)
 
@@ -475,7 +475,7 @@ class TestFollowUserAPI(TestCase):
         resp = self.client.post(reverse('follow_user'), data={
             'follow': False,
             'user': self.friend.username,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(self.user.following.count(), 0)
 
@@ -484,7 +484,7 @@ class TestFollowUserAPI(TestCase):
         resp = self.client.post(reverse('follow_user'), data={
             'follow': True,
             'user': self.user.username,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(self.user.following.count(), 0)
 
@@ -493,7 +493,7 @@ class TestFollowUserAPI(TestCase):
         resp = self.client.post(reverse('follow_user'), data={
             'follow': False,
             'user': self.user.username,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(self.user.following.count(), 0)
 
@@ -509,7 +509,7 @@ class TestFollowBoardAPI(TestCase):
         resp = self.client.post(reverse('follow_board'), data={
             'follow': True,
             'board': self.board.name,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.boards.count(), 1)
 
@@ -518,14 +518,14 @@ class TestFollowBoardAPI(TestCase):
         resp = self.client.post(reverse('follow_board'), data={
             'follow': True,
             'board': self.board.name,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.boards.count(), 1)
 
         resp = self.client.post(reverse('follow_board'), data={
             'follow': False,
             'board': self.board.name,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.boards.count(), 0)
 
@@ -534,14 +534,14 @@ class TestFollowBoardAPI(TestCase):
         resp = self.client.post(reverse('follow_board'), data={
             'follow': True,
             'board': self.board.name,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_200_OK)
         self.assertEquals(self.user.boards.count(), 1)
 
         resp = self.client.post(reverse('follow_board'), data={
             'follow': True,
             'board': self.board.name,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(self.user.boards.count(), 1)
 
@@ -550,6 +550,6 @@ class TestFollowBoardAPI(TestCase):
         resp = self.client.post(reverse('follow_board'), data={
             'follow': False,
             'board': self.board.name,
-        })
+        }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(self.user.boards.count(), 0)

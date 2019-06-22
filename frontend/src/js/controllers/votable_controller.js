@@ -106,7 +106,7 @@ export default class extends Controller {
         headers.set('X-CSRFToken', Utils.getCookie('csrftoken'));
 
         const payload = {};
-        payload['votable_id'] = Number.parseInt(this.item);
+        payload['votable_id'] = this.item;
         payload['votable_type'] = this.votable_type;
         payload['vote_type'] = vote_type;
 

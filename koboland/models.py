@@ -1,6 +1,6 @@
 from django.db import models
 
-from koboland_utils.fields import make_id
+from .helpers import make_id
 
 
 class BaseModel(models.Model):

@@ -15,8 +15,8 @@ from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from commenting.utils import render_html
-from koboland_utils import fields as model_fields
-from koboland_utils import models as koboland_models
+from koboland import fields as model_fields
+from koboland import models as koboland_models
 from .validators import UsernameValidator
 
 
@@ -121,7 +121,7 @@ class Topic(Votable):
         value = self.title
         # Only set the slug once ==> Updates not permitted
         # Initially, before the first save, this is None
-        if not self.id:
+        if not self.id or len(self.id) == 0:
             self.slug = slugify(value, allow_unicode=True)[:48]
         super().save(force_insert=force_insert, force_update=force_update, using=using,
                      update_fields=update_fields)
@@ -148,7 +148,7 @@ class Post(Votable):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         # Initially, before first save, this is None
-        if self.id is None:
+        if self.id is None or len(self.id) == 0:
             self.topic.post_count += 1
             self.topic.save()
         super().save(force_insert=force_insert, force_update=force_update, using=using,
@@ -163,7 +163,7 @@ class Post(Votable):
     # TODO ....
     def get_absolute_url(self):
         page_size = getattr(settings, 'VOTABLE_PAGE_SIZE', 30)
-        return self.topic.get_absolute_url() + f'?page={(self.topic.post_count // page_size) + 1}#{self.pseudoid}'
+        return self.topic.get_absolute_url() + f'?page={(self.topic.post_count // page_size) + 1}#{self.id}'
 
 
 class VoteQuerySet(models.QuerySet):
@@ -223,7 +223,7 @@ class Vote(models.Model):
     is_shared = models.BooleanField(default=False)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    object_id = models.CharField(max_length=koboland_models.RandomPrimaryIdModel.CRYPT_KEY_LEN_MAX)
     content_object = GenericForeignKey('content_type', 'object_id')
 
     objects = VoteQuerySet.as_manager()
@@ -351,3 +351,6 @@ class User(AbstractUser):
     about_text = models.TextField(blank=True, null=True)
     reputation = models.IntegerField(default=0)
     objects = UserManager()
+
+    def get_absolute_url(self):
+        return reverse('user', kwargs={'username': self.username})

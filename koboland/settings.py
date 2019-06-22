@@ -39,10 +39,9 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'rest_framework',
     'channels',
-    'koboland_utils.apps.KobolandUtilsConfig',
     'commenting.apps.CommentingConfig',
     'main.apps.MainConfig',
-    'chat.apps.ChatConfig',
+    # 'chat.apps.ChatConfig',
 ]
 
 MIDDLEWARE = [

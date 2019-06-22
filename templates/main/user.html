@@ -2,20 +2,28 @@
 
 
 {% block content %}
-    {% if user.is_banned %}
+    {% if user_viewed.is_banned %}
         <p>This user account has been banned.</p>
     {% else %}
-        <h4>{{ user.username }}</h4>
+        <h4>{{ user_viewed.username }}</h4>
 
-        {% if not user.is_me %}
-            <button>Follow</button>
+        {% if user.is_authenticated %}
+            <div data-controller="user" data-item="{{ user_viewed.username }}"
+                 data-is-followed="{{ user_viewed.is_followed }}" data-is-following="{{ user_viewed.is_following }}">
+                {% if not user_viewed.is_me %}
+                    <button class="btn btn-light" data-action="user#follow" data-target="user.follow">
+                        {% if user_viewed.is_followed %}Unfollow{% else %}Follow{% endif %}</button>
+                    <button class="btn btn-light" data-action="user#chat" data-target="user.chat">Chat</button>
+                {% endif %}
+            </div>
         {% endif %}
 
-        {% if user.about_text %}
-            {{ user.about_text }}
+
+        {% if user_viewed.about_text %}
+            {{ user_viewed.about_text }}
         {% endif %}
-        {% if user.display_picture %}
-            <img alt="display picture" src="{{ user.display_picture.file.url }}">
+        {% if user_viewed.display_picture %}
+            <img alt="display picture" src="{{ user_viewed.display_picture.file.url }}">
         {% endif %}
     {% endif %}
 {% endblock content %}

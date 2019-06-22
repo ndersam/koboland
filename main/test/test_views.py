@@ -83,5 +83,5 @@ class TestUserPage(TestCase):
         user = factories.UserFactory(username='testUser')
         self.client.force_login(user)
         resp = self.client.get(reverse('user', kwargs={'username': user.username}))
-        self.assertTrue(resp.context['user'].is_me)
+        self.assertTrue(resp.context['user_viewed'].is_me)
         self.assertTemplateUsed(resp, 'main/user.html')

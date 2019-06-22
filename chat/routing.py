@@ -1,3 +1,7 @@
+from django.urls import path
+
+from chat.consumers import ChatConsumer
+
 websocket_urlpatterns = [
-    # path('ws/customer-service/<int:order_id>/', consumers.ChatConsumer),
+    path('chat/', ChatConsumer),
 ]

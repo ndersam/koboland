@@ -159,8 +159,8 @@ class AbstractFollowAPI(APIView):
     }
 
     def post(self, request, format=None):
-        data = request.POST.copy()
-        data['follow'] = True if data.get('follow', True).lower() == 'true' else False
+        data = request.data
+        data['follow'] = True if str(data.get('follow', True)).lower() == 'true' else False
         manager = self.get_object_manager()
 
         if self.followable_key is None:
@@ -211,7 +211,7 @@ class AbstractFollowAPI(APIView):
         )
 
 
-class AbstractFollowTopicAPI(AbstractFollowAPI):
+class FollowTopicAPI(AbstractFollowAPI):
     queryset = Topic.objects.all()
     # permission_classes = FollowMixin.permission_classes
     followable_key = 'topic'
@@ -222,7 +222,7 @@ class AbstractFollowTopicAPI(AbstractFollowAPI):
         return Topic.objects
 
 
-class AbstractFollowUserAPI(AbstractFollowAPI):
+class FollowUserAPI(AbstractFollowAPI):
     queryset = User.objects.all()
     followable_key = 'user'
     follow_set_key = 'following'
@@ -232,7 +232,7 @@ class AbstractFollowUserAPI(AbstractFollowAPI):
         return User.objects
 
 
-class AbstractFollowBoardAPI(AbstractFollowAPI):
+class FollowBoardAPI(AbstractFollowAPI):
     queryset = Board.objects.all()
     followable_key = 'board'
     follow_set_key = 'boards'

@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ('message', models.TextField()),
                 ('timestamp', models.DateTimeField(auto_now_add=True, db_index=True)),
                 ('room', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages',
-                                           to='chat.Room')),
+                                           to='chat.MessageThread')),
             ],
         ),
     ]

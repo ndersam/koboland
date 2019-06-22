@@ -57,7 +57,7 @@ class PostListView(ListView):
                     self.topic.vote_type = vote.vote_type
                 self.topic.is_shared = vote.is_shared
 
-        posts = self.topic.posts.all().prefetch_related('votes', 'files').order_by(*self.ordering)
+        posts = self.topic.posts.all().prefetch_related('votes', 'files', 'author').order_by(*self.ordering)
         if self.request.user.is_authenticated:
             for post in posts:
                 votes = post.votes.filter(voter=self.request.user)
@@ -191,8 +191,12 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 class UserView(DetailView):
     template_name = 'main/user.html'
     model = User
+    context_object_name = 'user_viewed'
 
     def get_object(self, queryset=None):
         user = self.model.objects.get(username=self.kwargs.get('username'))
         user.is_me = user == self.request.user
+        if self.request.user.is_authenticated:
+            user.is_followed = user.followers.filter(username=self.request.user.username).exists()
+            user.is_following = self.request.user.followers.filter(username=user.username).exists()
         return user
