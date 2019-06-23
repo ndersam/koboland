@@ -5,7 +5,7 @@
     <div data-target="votable.topic" data-item-id="{{ topic.id }}">
         <h2>{{ topic.title }}</h2>
         <p>
-            <span class="d-block"><a  href="{{ topic.author.get_absolute_url }}"><strong
+            <span class="d-block"><a href="{{ topic.author.get_absolute_url }}"><strong
                     class="text-gray-dark">{{ topic.author }} </strong></a>   {{ topic.how_long_ago }}
                 {% if topic.modified %}(modified){% endif %}</span>
 
@@ -59,3 +59,13 @@
     </div>
 
 {% endblock page_content %}
+
+{% block aside %}
+    <div data-controller="topic" data-topic-is-followed="{{ topic.is_followed }}" data-topic-id="{{ topic.id }}">
+
+        {% if  user.is_authenticated %}
+            <button class="btn btn-light w-full" data-action="topic#follow" data-target="topic.follow">{% if topic.is_followed %}Unfollow{% else %}Follow{% endif %}</button>
+        {% endif %}
+
+    </div>
+{% endblock aside %}

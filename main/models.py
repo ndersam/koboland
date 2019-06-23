@@ -1,6 +1,7 @@
 import os
 import uuid
 from datetime import timedelta
+import math
 
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser, BaseUserManager
@@ -160,10 +161,10 @@ class Post(Votable):
         self.topic.save()
         super().delete(using, keep_parents)
 
-    # TODO ....
     def get_absolute_url(self):
         page_size = getattr(settings, 'VOTABLE_PAGE_SIZE', 30)
-        return self.topic.get_absolute_url() + f'?page={(self.topic.post_count // page_size) + 1}#{self.id}'
+        page = math.ceil(self.topic.post_count / page_size)
+        return self.topic.get_absolute_url() + f'?page={page}#{self.id}'
 
 
 class VoteQuerySet(models.QuerySet):

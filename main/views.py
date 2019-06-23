@@ -61,6 +61,8 @@ class PostListView(ListView):
                         'vote_type')[:1])
             )
         self.topic = topics.first()
+        if self.request.user.is_authenticated:
+            self.topic.is_followed = self.topic.followers.filter(username=self.request.user.username).exists()
 
         posts = self.topic.posts.all().prefetch_related('votes', 'files', 'author').order_by(*self.ordering)
         if self.request.user.is_authenticated:
