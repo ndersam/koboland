@@ -85,3 +85,20 @@ class TestUserPage(TestCase):
         resp = self.client.get(reverse('user', kwargs={'username': user.username}))
         self.assertTrue(resp.context['user_viewed'].is_me)
         self.assertTemplateUsed(resp, 'main/user.html')
+
+
+class TestBoardPage(TestCase):
+    def setUp(self) -> None:
+        self.usr = factories.UserFactory()
+        self.board = factories.BoardFactory()
+
+    def test_logged_in_user_board_page_loads_correctly(self):
+        self.client.force_login(self.usr)
+        resp = self.client.get(self.board.get_absolute_url())
+        self.assertIsNotNone(getattr(resp.context['board'], 'is_followed', None))
+        self.assertTemplateUsed(resp, 'main/topic_list.html')
+
+    def test_anonymous_user_board_page_loads_correctly(self):
+        resp = self.client.get(self.board.get_absolute_url())
+        self.assertIsNone(getattr(resp.context['board'], 'is_followed', None))
+        self.assertTemplateUsed(resp, 'main/topic_list.html')

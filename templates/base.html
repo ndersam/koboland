@@ -35,6 +35,7 @@
                         <li class="nav-item">
                             <a class="nav-link" href="
 
+
                                     {% url 'logout' %}{% if request.path  != signup_url and request.path != login_url %}?next={{ request.path }}{% endif %}">Logout</a>
                         </li>
                     {% else %}
@@ -42,10 +43,12 @@
                             <a class="nav-link"
                                href="
 
+
                                        {% url 'login' %}{% if request.path != login_url and request.path != signup_url %}?next={{ request.path }}{% endif %}">Login</a>
                         </li>
                         <li class="nav-item {% if request.path == signup_url %}active{% endif %}">
                             <a class="nav-link" href="
+
 
 
 
@@ -65,9 +68,15 @@
         {% endfor %}
     {% endif %}
 
-    <div class="col-lg-8">
-        {% block content %}
-        {% endblock content %}
+    <div class="row">
+        <div class="col-8 col-lg-8">
+            {% block content %}
+            {% endblock content %}
+        </div>
+        <aside class="col-4 col-lg-4">
+            {% block aside %}
+            {% endblock aside %}
+        </aside>
     </div>
 </div>
 </body>

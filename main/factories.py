@@ -6,6 +6,7 @@ from main import models
 class UserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.User
+    username = 'testUser'
 
 
 class TopicFactory(factory.django.DjangoModelFactory):

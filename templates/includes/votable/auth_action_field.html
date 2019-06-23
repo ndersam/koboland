@@ -1,7 +1,7 @@
 {% load widget_tweaks %}
 <span class="d-block"
       data-controller="votable"
-      data-item-vote-state="{{ item.vote_type }}"
+      data-item-vote-state="{% if item.vote_type %}{{ item.vote_type }}{% endif %}"
       data-item-class="{{ item_class }}" {% if item_class == 'post' %}data-topic-id="{{ topic.id }}"{% endif %}
       data-item-like-count="{{ item.likes }}"
       data-item-shared="{% if item.is_shared %}1{% else %}0{% endif %}"

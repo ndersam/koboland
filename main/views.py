@@ -92,6 +92,8 @@ class TopicListView(ListView):
 
     def get_queryset(self):
         self.board = Board.objects.get(name=self.kwargs['board'])
+        if self.request.user.is_authenticated:
+            self.board.is_followed = self.request.user.boards.filter(name=self.board.name).exists()
         return self.board.topics.order_by(*self.ordering)
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -119,7 +121,7 @@ class TopicCreateView(LoginRequiredMixin, CreateView):
         kwargs = super().get_form_kwargs()
         kwargs['author'] = self.request.user
         if self.request.GET:
-            board_name = self.request.GET.get('q', '')
+            board_name = self.request.GET.get('board', '')
             try:
                 Board.objects.get(name=board_name)
                 kwargs['board'] = board_name

@@ -15,3 +15,16 @@
     {% endfor %}
 
 {% endblock page_content %}
+
+{% block aside %}
+    <div data-controller="board" data-board-is-followed="{{ board.is_followed }}" data-board-id="{{ board.name }}">
+        <div>
+            {{ board.name }}
+        </div>
+        {% if  user.is_authenticated %}
+            <button class="btn btn-light w-full" data-action="board#follow" data-target="board.follow">{% if board.is_followed %}Unfollow{% else %}Follow{% endif %}</button>
+            <button class="btn btn-primary w-full" data-action="board#new_topic" data-target="board.new_topic">New topic</button>
+        {% endif %}
+
+    </div>
+{% endblock %}
