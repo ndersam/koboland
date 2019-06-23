@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'channels',
     'commenting.apps.CommentingConfig',
     'main.apps.MainConfig',
-    # 'chat.apps.ChatConfig',
+    'chat.apps.ChatConfig',
 ]
 
 MIDDLEWARE = [

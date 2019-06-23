@@ -33,7 +33,7 @@ export default class extends Controller {
     }
 
     setUpWebSocket() {
-
+        // let ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
         let socket = new ReconnectingWebSocket(CHAT_URL);
         socket.onmessage(function (e) {
             // let data = JSON.parse(e.data);

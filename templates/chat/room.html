@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="row" data-controller="chat">
+
+        <div class="col-lg-2 col-4">
+            {% for thread in threads %}
+                <div><p>{{ thread.display_name }}</p></div>
+            {% endfor %}
+        </div>
+
+        <div class="col-lg-10 col-8">
+
+        </div>
+    </div>
+
+{% endblock content %}

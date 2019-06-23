@@ -1,10 +1,12 @@
-from django.shortcuts import render
-from django.http import JsonResponse, HttpResponse
-from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Q, F, Exists, OuterRef
+from django.http import JsonResponse, HttpResponse, Http404
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+
 from chat.models import MessageThread, Message
 from chat.serializers import MessageListSerializer
+from main.models import User
 
 
 @login_required
@@ -73,3 +75,42 @@ def add_chatroom(request):
     if request.user not in thread.clients.all():
         thread.clients.add(request.user)
     return HttpResponse(status=200)
+
+
+@login_required
+def show_chat(request, friend_type, friend):
+    if request.POST:
+        raise Http404  # TODO
+
+    new_thread = None
+    if friend_type == 'user':
+        kwargs = {'clients__username__in': [request.user.username, friend], 'thread_type': MessageThread.PRIVATE}
+        annotation = {
+            'display_name': ~Q('clients__username')
+        }
+    else:
+        kwargs = {'name': friend, 'clients__username': request.user.username, }
+
+    threads = MessageThread.objects.filter(
+        clients=request.user
+    ).annotate(
+        last_message_date=F('last_message__date'),
+        is_thread=Exists(
+            MessageThread.objects.filter(id=OuterRef('id'), **kwargs))
+    ).order_by('-is_thread', F('last_message_date').desc(nulls_last=True))
+
+    if friend_type == 'user':
+        if threads.exists() and threads.first().is_thread:  # matching thread, already exists
+            setattr(threads.first(), 'display_name', friend)
+        else:
+            new_thread = MessageThread.objects.create(thread_type=MessageThread.PRIVATE)
+            new_thread.clients.add(request.user)
+            new_thread.clients.add(User.objects.get(username=friend))
+            new_thread.save()
+            setattr(new_thread, 'display_name', friend)
+
+    print(threads, new_thread)
+
+    return render(
+        request, 'chat/room.html', {'threads': threads, 'new_thread': new_thread},
+    )
