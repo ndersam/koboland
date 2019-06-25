@@ -92,8 +92,15 @@ class PostCreateAPI(APIView):
             submission = serializer.save()
             for file, content_type in zip(files, content_types):
                 submission.files.create(file=file, content_type=content_type)
+
+            # Used in TopicCreateAPI
+            self.handle_extra_non_serialized_fields(submission, data)
+
             return HttpResponseRedirect(submission.get_absolute_url())
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def handle_extra_non_serialized_fields(self, submission, kwargs):
+        pass
 
     def validate_files(self, files):
         """ Validates files and returns a list of content_type of each file """
@@ -127,6 +134,12 @@ class TopicCreateAPI(PostCreateAPI):
     @classmethod
     def serialize(cls, data):
         return TopicSerializer(data=data)
+
+    def handle_extra_non_serialized_fields(self, submission, kwargs):
+        follow = str(kwargs.get('follow_topic', False)).lower() == 'true'
+        if follow:
+            self.request.user.topics_following.add(submission)
+            self.request.user.save()
 
 
 class AbstractFollowAPI(APIView):

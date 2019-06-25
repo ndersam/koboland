@@ -81,6 +81,7 @@ class TopicCreateForm(PostCreateForm):
                                 attrs={'multiple': True,
                                        'accept': ', '.join(getattr(settings, 'SUBMISSION_MEDIA_TYPES', ''))}),
                             required=False, label_suffix='')
+    follow_topic = forms.BooleanField(label='Follow topic', required=False)
 
     class Meta:
         model = Topic

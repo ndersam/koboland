@@ -185,7 +185,6 @@ class TestBoardController(LoggedInLiveServerTestCase):
         board = models.Board.objects.get(name=board.name)
         user = models.User.objects.get(username=self.user.username)
         self.assertEquals(user.boards.count(), 0)
-        self.assertEquals(user.boards.first(), board)
 
     def test_click_submit_url_goes_to_submit_topic_page(self):
         board = factories.BoardFactory()

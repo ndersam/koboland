@@ -238,6 +238,38 @@ class TestTopicCreateAPI(TestCase):
         self.title = 'This is my title'
         self.client.force_login(self.user)
 
+    def test_create_topic_and_follow_works(self):
+        self.assertEquals(self.board.topics.count(), 0)
+        resp = self.client.post(reverse('topic_create'), data={
+            'board': self.board.name,
+            'content': self.content,
+            'title': self.title,
+            'follow_topic': True,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        self.board.refresh_from_db()
+        self.user.refresh_from_db()
+        self.assertEquals(self.board.topics.count(), 1)
+        self.assertEquals(self.board.topics.count(), 1)
+        self.assertEquals(self.user.topics.count(), 1)
+        self.assertEquals(self.user.topics_following.count(), 1)
+
+    def test_create_topic_and_not_follow_works(self):
+        self.assertEquals(self.board.topics.count(), 0)
+        resp = self.client.post(reverse('topic_create'), data={
+            'board': self.board.name,
+            'content': self.content,
+            'title': self.title,
+            'follow_topic': False,
+        })
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        self.board.refresh_from_db()
+        self.user.refresh_from_db()
+        self.assertEquals(self.board.topics.count(), 1)
+        self.assertEquals(self.board.topics.count(), 1)
+        self.assertEquals(self.user.topics.count(), 1)
+        self.assertEquals(self.user.topics_following.count(), 0)
+
     def test_create_post_works_without_file(self):
         self.assertEquals(self.board.topics.count(), 0)
         resp = self.client.post(reverse('topic_create'), data={
