@@ -29,4 +29,10 @@
                             data-action="click->votable#quote">
                         {% include "includes/icons/comment.html" %}
                     </button>
+                    {% if user == item.author %}
+                         <button class="btn"
+                            data-action="click->votable#modify">
+                        Modify
+                    </button>
+                    {% endif %}
 </span>

@@ -10,12 +10,12 @@ from django.http import HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
 from commenting.utils import quote_votable
-from .forms import UserCreationForm, PostCreateForm, TopicCreateForm
+from .forms import UserCreationForm, PostCreateForm, TopicCreateForm, PostUpdateForm
 from .models import Topic, Board, Vote, Post, User
 
 logger = logging.getLogger(__name__)
@@ -211,3 +211,12 @@ class UserView(DetailView):
             user.is_followed = user.followers.filter(username=self.request.user.username).exists()
             user.is_following = self.request.user.followers.filter(username=user.username).exists()
         return user
+
+
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostUpdateForm
+    template_name = 'main/post_update.html'
+    # fields = ['content', 'files']
+    context_object_name = 'post'
+    pk_url_kwarg = 'post_id'

@@ -6,7 +6,7 @@ from django.urls import path, re_path
 from .api import PostCreateAPI, TopicCreateAPI, VotableVoteAPI, FollowTopicAPI, FollowBoardAPI, \
     FollowUserAPI
 from .forms import AuthenticationForm
-from .views import (SignupView, PostListView, TopicListView, HomeListView,
+from .views import (SignupView, PostListView, TopicListView, HomeListView, PostUpdateView,
                     TopicCreateView, logout_view, PostCreateView, UserView)
 
 urlpatterns = [
@@ -26,6 +26,7 @@ urlpatterns = [
     path('api-auth/follow/board/', FollowBoardAPI.as_view(), name='follow_board'),
     path('submit/', TopicCreateView.as_view(), name='topic_create_view'),
     path('comment/', PostCreateView.as_view(), name='post_create_view'),
+    path('comment/edit/<slug:post_id>/', PostUpdateView.as_view(), name='post_update'),
     path('user/<slug:username>/', UserView.as_view(), name='user'),
 ]
 

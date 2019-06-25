@@ -90,6 +90,19 @@ class TopicCreateForm(PostCreateForm):
             'title': forms.TextInput(attrs={'placeholder': 'Title'}),
         }
 
-    # def __init__(self, *args, **kwargs):
-    #     self.author = kwargs.pop('author')
-    #     super().__init__(*args, **kwargs)
+
+class PostUpdateForm(forms.ModelForm):
+    files = forms.FileField(label='Select image/video',
+                            widget=forms.ClearableFileInput(
+                                attrs={'multiple': True,
+                                       'accept': ', '.join(
+                                           getattr(settings, 'SUBMISSION_MEDIA_TYPES', ''))}),
+                            required=False, label_suffix='')
+    files_to_delete = forms.CharField(max_length=10)
+
+    class Meta:
+        model = Post
+        fields = ['content', 'files']
+        widgets = {
+            'files_to_delete': forms.HiddenInput(),
+        }
