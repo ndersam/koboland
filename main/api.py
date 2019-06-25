@@ -253,3 +253,67 @@ class FollowBoardAPI(AbstractFollowAPI):
 
     def get_object_manager(cls) -> Manager:
         return Board.objects
+
+
+class PostUpdateAPI(APIView):
+    file_validator = FileValidator(content_types=(getattr(settings, 'SUBMISSION_MEDIA_TYPES', '')))
+    queryset = Post.objects.all()
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request, format=None):
+        data = request.POST.copy()
+        data['author'] = request.user.username
+        serializer = self.serialize(data)
+        if serializer.is_valid():
+            files = request.FILES.getlist('files')
+
+            try:
+                self.validate_non_empty_post(data['content'], files)
+            except ValidationError as e:
+                return Response({'errors': e}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                content_types = self.validate_files(files)
+            except ValidationError as e:
+                return Response({'errors': e}, status=status.HTTP_400_BAD_REQUEST)
+
+            submission = serializer.save()
+            for file, content_type in zip(files, content_types):
+                submission.files.create(file=file, content_type=content_type)
+
+            # Used in TopicCreateAPI
+            self.handle_extra_non_serialized_fields(submission, data)
+
+            return HttpResponseRedirect(submission.get_absolute_url())
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def handle_extra_non_serialized_fields(self, submission, kwargs):
+        pass
+
+    def validate_files(self, files):
+        """ Validates files and returns a list of content_type of each file """
+        content_types = []
+        errors = []
+        for file in files:
+            try:
+                # returns a dict containing content_type
+                meta = self.file_validator(file)
+                content_types.append(meta['content_type'])
+            except ValidationError as e:
+                errors += e.messages
+        if len(errors) > 0:
+            raise ValidationError(errors)
+        return content_types
+
+    @staticmethod
+    def validate_non_empty_post(text_content: str, files):
+        if len(text_content.strip()) == 0 and len(files) == 0:
+            raise ValidationError('Empty post')
+
+    @classmethod
+    def serialize(cls, data):
+        return PostSerializer(data=data)
+
+
+class TopicUpdateAPI(PostUpdateAPI):
+    pass

@@ -99,11 +99,14 @@ class PostUpdateForm(forms.ModelForm):
                                        'accept': ', '.join(
                                            getattr(settings, 'SUBMISSION_MEDIA_TYPES', ''))}),
                             required=False, label_suffix='')
-    files_to_delete = forms.CharField(max_length=10)
+    files_to_delete = forms.CharField(max_length=10, widget=forms.HiddenInput())
 
     class Meta:
         model = Post
-        fields = ['content', 'files']
-        widgets = {
-            'files_to_delete': forms.HiddenInput(),
-        }
+        fields = ['content', 'files', 'files_to_delete']
+
+
+class TopicUpdateForm(PostUpdateForm):
+    class Meta(PostUpdateForm.Meta):
+        model = Topic
+        fields = ['title'] + PostUpdateForm.Meta.fields

@@ -102,3 +102,36 @@ class TestBoardPage(TestCase):
         resp = self.client.get(self.board.get_absolute_url())
         self.assertIsNone(getattr(resp.context['board'], 'is_followed', None))
         self.assertTemplateUsed(resp, 'main/topic_list.html')
+
+
+class TestUpdatePostPage(TestCase):
+    def setUp(self) -> None:
+        self.usr = factories.UserFactory()
+        self.board = factories.BoardFactory()
+        self.topic = factories.TopicFactory(board=self.board, author=self.usr)
+        self.post = factories.PostFactory(topic=self.topic, author=self.usr)
+
+    def test_page_load_correctly(self):
+        self.client.force_login(self.usr)
+        resp = self.client.get(reverse('post-update-view', kwargs={'post_id': self.post.id}))
+        field = resp.context['form'].fields.get('files_to_delete')
+        self.assertIsNotNone(field)
+        self.assertTrue(field.widget.is_hidden)
+        self.assertIsInstance(resp.context['form'], forms.PostUpdateForm)
+        self.assertTemplateUsed(resp, 'main/post_update.html')
+
+
+class TestUpdateTopicPage(TestCase):
+    def setUp(self) -> None:
+        self.usr = factories.UserFactory()
+        self.board = factories.BoardFactory()
+        self.topic = factories.TopicFactory(board=self.board, author=self.usr)
+
+    def test_page_load_correctly(self):
+        self.client.force_login(self.usr)
+        resp = self.client.get(reverse('topic-update-view', kwargs={'topic_id': self.topic.id}))
+        field = resp.context['form'].fields.get('files_to_delete')
+        self.assertIsNotNone(field)
+        self.assertTrue(field.widget.is_hidden)
+        self.assertIsInstance(resp.context['form'], forms.TopicUpdateForm)
+        self.assertTemplateUsed(resp, 'main/topic_update.html')

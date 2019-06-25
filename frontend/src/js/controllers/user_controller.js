@@ -7,7 +7,7 @@ const DATA_IS_FOLLOWING = 'data-is-following';
 const DATA_IS_FOLLOWED = 'data-is-followed';
 
 const URL_CHAT = '/chat/';
-const URL_FOLLOW = '/api-auth/follow/user/';
+const URL_FOLLOW = '/api/user/follow/';
 
 
 export default class extends Controller {

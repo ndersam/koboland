@@ -7,10 +7,10 @@ const DISLIKE = -1;
 const NO_VOTE = 0;
 const SHARE = 2;
 const UNSHARE = -2;
-const URL = '/api-auth/vote/';
-const URL_POST = '/comment/';
+const URL = '/api/vote/';
+const URL_POST_ADD = '/post/add/';
 const URL_MODIFY_TOPIC = '/topic/edit/';
-const URL_MODIFY_POST = '/comment/edit/';
+const URL_MODIFY_POST = '/post/edit/';
 
 const POST_CLASS = 'post';
 const TOPIC_CLASS = 'topic';
@@ -206,9 +206,9 @@ export default class extends Controller {
 
     quote() {
         if (this.votable_type === TOPIC_CLASS) {
-            Turbolinks.visit(`${URL_POST}?topic=${this.item}&quote_topic=1`);
+            Turbolinks.visit(`${URL_POST_ADD}?topic=${this.item}&quote_topic=1`);
         } else {
-            Turbolinks.visit(`${URL_POST}?topic=${this.element.getAttribute('data-topic-id')}&post=${this.item}`);
+            Turbolinks.visit(`${URL_POST_ADD}?topic=${this.element.getAttribute('data-topic-id')}&post=${this.item}`);
         }
     }
 

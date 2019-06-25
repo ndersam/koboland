@@ -2,7 +2,7 @@ import {Controller} from 'stimulus';
 
 const Utils = require('../utils');
 
-const URL_FOLLOW = '/api-auth/follow/topic/';
+const URL_FOLLOW = '/api/topic/follow/';
 const DATA_TOPIC_IS_FOLLOWED = 'data-topic-is-followed';
 const DATA_TOPIC_ID = 'data-topic-id';
 

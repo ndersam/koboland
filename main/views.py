@@ -15,7 +15,7 @@ from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
 
 from commenting.utils import quote_votable
-from .forms import UserCreationForm, PostCreateForm, TopicCreateForm, PostUpdateForm
+from .forms import UserCreationForm, PostCreateForm, TopicCreateForm, PostUpdateForm, TopicUpdateForm
 from .models import Topic, Board, Vote, Post, User
 
 logger = logging.getLogger(__name__)
@@ -214,9 +214,24 @@ class UserView(DetailView):
 
 
 class PostUpdateView(LoginRequiredMixin, UpdateView):
+    """ Used for GET request ONLY ... API Handles the POST request """
     model = Post
     form_class = PostUpdateForm
     template_name = 'main/post_update.html'
-    # fields = ['content', 'files']
     context_object_name = 'post'
     pk_url_kwarg = 'post_id'
+
+    def form_valid(self, form):
+        super().form_valid(form)
+
+
+class TopicUpdateView(LoginRequiredMixin, UpdateView):
+    """ Used for GET request ONLY ... API Handles the POST request """
+    model = Topic
+    form_class = TopicUpdateForm
+    template_name = 'main/topic_update.html'
+    context_object_name = 'topic'
+    pk_url_kwarg = 'topic_id'
+
+    def form_valid(self, form):
+        super().form_valid(form)

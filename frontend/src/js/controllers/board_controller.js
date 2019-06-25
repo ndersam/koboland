@@ -2,8 +2,8 @@ import {Controller} from 'stimulus';
 
 const Utils = require('../utils');
 
-const URL_FOLLOW = '/api-auth/follow/board/';
-const URL_NEW_TOPIC = '/submit';
+const URL_FOLLOW = '/api/board/follow/';
+const URL_NEW_TOPIC = '/topic/add';
 const DATA_BOARD_IS_FOLLOWED = 'data-board-is-followed';
 const DATA_BOARD_ID = 'data-board-id';
 

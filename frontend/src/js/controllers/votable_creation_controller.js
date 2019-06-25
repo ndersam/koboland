@@ -2,8 +2,8 @@ import {Controller} from "stimulus";
 
 const Utils = require('../utils');
 
-const POST_URL = '/api-auth/submit/post/';
-const TOPIC_URL = '/api-auth/submit/topic/';
+const POST_URL = '/api/post/add/';
+const TOPIC_URL = '/api/topic/add/';
 const DATA_ITEM_CLASS = 'data-item-class';
 const POST_CLASS = 'post';
 const TOPIC_CLASS = 'topic';
@@ -24,18 +24,26 @@ export default class extends Controller {
     }
 
     connect() {
-        const itemType = this.element.getAttribute(DATA_ITEM_CLASS);
-        this.url = null;
-        if (itemType === POST_CLASS) {
-            this.url = POST_URL;
-        } else if (itemType === TOPIC_CLASS) {
-            this.url = TOPIC_URL;
-        }
+        this.setUpURL();
 
         if (this.url != null) {
             this.files = [];
             this.setUpElement();
             this.setUpFileInput();
+        }
+    }
+
+    get itemType() {
+        return this.element.getAttribute(DATA_ITEM_CLASS);
+    }
+
+    setUpURL() {
+        const itemType = this.itemType;
+        this.url = null;
+        if (itemType === POST_CLASS) {
+            this.url = POST_URL;
+        } else if (itemType === TOPIC_CLASS) {
+            this.url = TOPIC_URL;
         }
     }
 

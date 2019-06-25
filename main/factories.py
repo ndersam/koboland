@@ -20,6 +20,7 @@ class TopicFactory(factory.django.DjangoModelFactory):
 class PostFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Post
+    content = 'this is content'
 
 
 class VoteFactory(factory.django.DjangoModelFactory):
