@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.core.validators import ValidationError
 from django.db.models import Manager
@@ -256,39 +258,81 @@ class FollowBoardAPI(AbstractFollowAPI):
 
 
 class PostUpdateAPI(APIView):
+    """
+    API
+    -----
+    * votable_id
+    * content
+    * files
+    * files_to_keep: a JSON object mapping indexes or files to keep to new position in the list of all files
+    * next ==> REDIRECT URL
+     """
     file_validator = FileValidator(content_types=(getattr(settings, 'SUBMISSION_MEDIA_TYPES', '')))
     queryset = Post.objects.all()
     permission_classes = (IsAuthenticated,)
+    fields = ['votable_id', 'content', 'files', 'files_to_keep']
+
+    errors = {
+        'many_files': _(f'Not more than "{settings.SUBMISSION_MEDIA_LIMIT}" files allowed'),
+    }
 
     def post(self, request, format=None):
         data = request.POST.copy()
-        data['author'] = request.user.username
-        serializer = self.serialize(data)
-        if serializer.is_valid():
+
+        # ID
+        try:
+            votable = self.queryset.get(id=data['votable_id'])
+        except (Post.DoesNotExist, KeyError) as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=e.messages)
+
+        # USER PERMISSIONS
+        if votable.author != request.user:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        # FILE LIMIT
+        try:
+            files_to_keep = json.loads(data['files_to_keep'])
             files = request.FILES.getlist('files')
+            if len(files_to_keep) + len(files) >= settings.SUBMISSION_MEDIA_LIMIT:
+                return Response(status=status.HTTP_400_BAD_REQUEST, data=self.errors['many_files'])
 
-            try:
-                self.validate_non_empty_post(data['content'], files)
-            except ValidationError as e:
-                return Response({'errors': e}, status=status.HTTP_400_BAD_REQUEST)
+            if len(files_to_keep) > votable.files.count():
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        except (KeyError,  json.JSONDecodeError)as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=str(e))
 
-            try:
-                content_types = self.validate_files(files)
-            except ValidationError as e:
-                return Response({'errors': e}, status=status.HTTP_400_BAD_REQUEST)
+        # NON-EMPTY SUBMISSION
+        try:
+            self.validate_non_empty_post(data['content'], files, files_to_keep, data=data)
+        except ValidationError as e:
+            return Response({'errors': e}, status=status.HTTP_400_BAD_REQUEST)
 
-            submission = serializer.save()
-            for file, content_type in zip(files, content_types):
-                submission.files.create(file=file, content_type=content_type)
+        # FILES OF RIGHT CONTENT TYPE
+        try:
+            content_types = self.validate_files(files)
+        except ValidationError as e:
+            return Response({'errors': e}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Used in TopicCreateAPI
-            self.handle_extra_non_serialized_fields(submission, data)
+        """ UPDATING """
+        to_delete = []
+        for idx, file in enumerate(votable.files.all()):
+            if files_to_keep.get(str(idx)) is None:
+                to_delete.append(file)
+        data['files_to_delete'] = to_delete
+        data['content_types'] = content_types or []  # Content types of files to be newly uploaded
+        data['files'] = files or []
 
-            return HttpResponseRedirect(submission.get_absolute_url())
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.update(votable, data)
 
-    def handle_extra_non_serialized_fields(self, submission, kwargs):
-        pass
+        return HttpResponseRedirect(data.get('next') or votable.get_absolute_url())
+
+    def update(self, votable, data):
+        votable.content = data['content']
+        if len(data['files_to_delete']) > 0:
+            votable.files.remove(*data['files_to_delete'])
+        for file, content_type in zip(data['files'], data['content_types']):
+            votable.files.create(file=file, content_type=content_type)
+        votable.save()
 
     def validate_files(self, files):
         """ Validates files and returns a list of content_type of each file """
@@ -306,14 +350,22 @@ class PostUpdateAPI(APIView):
         return content_types
 
     @staticmethod
-    def validate_non_empty_post(text_content: str, files):
-        if len(text_content.strip()) == 0 and len(files) == 0:
+    def validate_non_empty_post(text_content: str, files, files_to_keep, **kwargs):
+        if len(text_content.strip()) == 0 and len(files) == 0 and len(files_to_keep) == 0:
             raise ValidationError('Empty post')
-
-    @classmethod
-    def serialize(cls, data):
-        return PostSerializer(data=data)
 
 
 class TopicUpdateAPI(PostUpdateAPI):
-    pass
+    queryset = Topic.objects.all()
+    @staticmethod
+    def validate_non_empty_post(text_content: str, files, files_to_keep, **kwargs):
+        try:
+            if len(kwargs['data']['title'].strip()) == 0:
+                raise ValidationError('Topic title not set')
+        except KeyError:
+            raise ValidationError('No title')
+        PostUpdateAPI.validate_non_empty_post(text_content, files, files_to_keep, **kwargs)
+
+    def update(self, votable, data):
+        votable.title = data['title']
+        super().update(votable, data)

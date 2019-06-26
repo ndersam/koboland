@@ -162,6 +162,8 @@ SUBMISSION_MEDIA_TYPES = [
     'image/webp', 'image/bmp'
 ]
 
+SUBMISSION_MEDIA_LIMIT = 4
+
 ASGI_APPLICATION = 'koboland.routing.application'
 CHANNEL_LAYERS = {
     'default': {

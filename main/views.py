@@ -13,6 +13,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.edit import FormView
 from django.views.generic.list import ListView
+from django.core.exceptions import PermissionDenied
 
 from commenting.utils import quote_votable
 from .forms import UserCreationForm, PostCreateForm, TopicCreateForm, PostUpdateForm, TopicUpdateForm
@@ -221,8 +222,11 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     context_object_name = 'post'
     pk_url_kwarg = 'post_id'
 
-    def form_valid(self, form):
-        super().form_valid(form)
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        if obj.author != self.request.user:
+            raise PermissionDenied()
+        return obj
 
 
 class TopicUpdateView(LoginRequiredMixin, UpdateView):
@@ -233,5 +237,9 @@ class TopicUpdateView(LoginRequiredMixin, UpdateView):
     context_object_name = 'topic'
     pk_url_kwarg = 'topic_id'
 
-    def form_valid(self, form):
-        super().form_valid(form)
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        if obj.author != self.request.user:
+            raise PermissionDenied()
+        return obj
+

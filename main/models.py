@@ -56,6 +56,7 @@ class Votable(koboland_models.RandomPrimaryIdModel):
     content_html = models.TextField(blank=True)
     modified = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
+    date_modified = models.DateTimeField(null=True)
     # pseudoid = models.CharField(default='', max_length=12, unique=True, editable=False)
     files = models.ManyToManyField('SubmissionMedia')
 
