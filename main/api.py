@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.utils import timezone
 from rest_framework.views import APIView
 
 from main.validators import FileValidator, VoteRequestValidator
@@ -332,6 +333,7 @@ class PostUpdateAPI(APIView):
             votable.files.remove(*data['files_to_delete'])
         for file, content_type in zip(data['files'], data['content_types']):
             votable.files.create(file=file, content_type=content_type)
+        votable.date_modified = timezone.now()
         votable.save()
 
     def validate_files(self, files):
