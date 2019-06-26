@@ -24,6 +24,7 @@ export default class extends Controller {
     }
 
     connect() {
+        this.url = null;
         this.setUpURL();
 
         if (this.url != null) {
@@ -37,14 +38,16 @@ export default class extends Controller {
         return this.element.getAttribute(DATA_ITEM_CLASS);
     }
 
+    get isPost(){
+        return this.itemType === POST_CLASS;
+    }
+
+    get isTopic(){
+        return this.itemType === TOPIC_CLASS;
+    }
+
     setUpURL() {
-        const itemType = this.itemType;
-        this.url = null;
-        if (itemType === POST_CLASS) {
-            this.url = POST_URL;
-        } else if (itemType === TOPIC_CLASS) {
-            this.url = TOPIC_URL;
-        }
+         this.url = this.isPost? POST_URL: TOPIC_URL;
     }
 
     setUpElement() {

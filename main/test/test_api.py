@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 
+import json
 from main import factories
 from main.api import VotableVoteAPI
 from main.utils import create_image
@@ -585,3 +586,310 @@ class TestFollowBoardAPI(TestCase):
         }, content_type='application/json')
         self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEquals(self.user.boards.count(), 0)
+
+
+class TestPostUpdateAPI(TestCase):
+    def setUp(self) -> None:
+        self.user = factories.UserFactory(username='testUser')
+        board = factories.BoardFactory(name='testBoard')
+        self.topic = factories.TopicFactory(board=board, author=self.user, title='testTitle')
+        self.p1 = factories.PostFactory(content='a', topic=self.topic, author=self.user)
+        self.client.force_login(self.user)
+
+    def test_update_post_without_file_works(self):
+        content = 'b'
+        resp = self.client.post(reverse('post_edit'), data={
+            'votable_id': self.p1.id,
+            'content': content,
+            'files_to_keep': '{}',
+        })
+        self.p1.refresh_from_db()
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        self.assertEquals(content, self.p1.content)
+
+    def test_update_post_by_emptying_fields_fails(self):
+        resp = self.client.post(reverse('post_edit'), data={
+            'votable_id': self.p1.id,
+            'content': '',
+            'files_to_keep': '{}',
+        })
+        self.p1.refresh_from_db()
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_post_by_faking_files_to_keep_fails(self):
+        resp = self.client.post(reverse('post_edit'), data={
+            'votable_id': self.p1.id,
+            'content': self.p1.content,
+            'files_to_keep': json.dumps({1: 2}),
+        })
+        self.p1.refresh_from_db()
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_post_by_another_user_fails(self):
+        user2 = factories.UserFactory(username='user2', email='user2@mail.com')
+        self.client.force_login(user2)
+        resp = self.client.post(reverse('post_edit'), data={
+            'votable_id': self.p1.id,
+            'content': self.p1.content,
+            'files_to_keep': json.dumps({}),
+        })
+        self.p1.refresh_from_db()
+        self.assertEquals(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_post_by_emptying_text_and_adding_file_works(self):
+        self.assertEquals(self.p1.files.count(), 0)
+        file = SimpleUploadedFile('in1.jpg', create_image(None, "main/sample_data/images/in1.jpg").getvalue())
+        resp = self.client.post(reverse('post_edit'), {
+            'votable_id': self.p1.id,
+            'content': '',
+            'files': [file],
+            'files_to_keep': json.dumps({}),
+        })
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        self.p1.refresh_from_db()
+        self.assertEquals(self.p1.content, '')
+        self.assertEquals(self.p1.files.count(), 1)
+
+        files = self.p1.files.all()
+        self.assertEquals(len(files), 1)
+        for file in files:
+            file.file.delete(save=False)
+
+    def test_update_post_with_files_by_emptying_all_content_fails(self):
+        file = factories.SubmissionMediaFactory()
+        post = factories.PostFactory(content='a', topic=self.topic, author=self.user)
+        post.files.add(file)
+        post.save()
+        post.refresh_from_db()
+
+        self.assertEquals(post.files.count(), 1)
+
+        resp = self.client.post(reverse('post_edit'), {
+            'votable_id': post.id,
+            'content': '',
+            'files': [],
+            'files_to_keep': json.dumps({}),
+        })
+
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        post.refresh_from_db()
+        self.assertEquals(post.content, 'a')
+        self.assertEquals(post.files.count(), 1)
+
+        files = post.files.all()
+        self.assertEquals(len(files), 1)
+        for file in files:
+            file.file.delete(save=False)
+
+    def test_update_post_keeping_some_files_works(self):
+        post = factories.PostFactory(content='a', topic=self.topic, author=self.user)
+        post.files.add(factories.SubmissionMediaFactory())
+        post.files.add(factories.SubmissionMediaFactory())
+        post.save()
+        post.refresh_from_db()
+
+        self.assertEquals(post.files.count(), 2)
+
+        name_of_kept = post.files.all()[1].file.name
+        resp = self.client.post(reverse('post_edit'), {
+            'votable_id': post.id,
+            'content': 'a',
+            'files': [],
+            'files_to_keep': json.dumps({1: 0}),  # [keep first] ===> [Index in resulting file list]
+        })
+
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        post.refresh_from_db()
+        self.assertEquals(post.content, 'a')
+        self.assertEquals(post.files.count(), 1)
+        self.assertEquals(post.files.first().file.name, name_of_kept)
+
+        files = post.files.all()
+        for file in files:
+            file.file.delete(save=False)
+
+    def test_update_post_keeping_some_files_works_2(self):
+        """ Repeat of earlier test ... only keeping the first file in this case """
+        post = factories.PostFactory(content='a', topic=self.topic, author=self.user)
+        post.files.add(factories.SubmissionMediaFactory())
+        post.files.add(factories.SubmissionMediaFactory())
+        post.save()
+        post.refresh_from_db()
+
+        self.assertEquals(post.files.count(), 2)
+
+        name_of_kept = post.files.all()[0].file.name
+        resp = self.client.post(reverse('post_edit'), {
+            'votable_id': post.id,
+            'content': 'a',
+            'files': [],
+            'files_to_keep': json.dumps({0: 0}),  # [keep first] ===> [Index in resulting file list]
+        })
+
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        post.refresh_from_db()
+        self.assertEquals(post.content, 'a')
+        self.assertEquals(post.files.count(), 1)
+        self.assertEquals(post.files.first().file.name, name_of_kept)
+
+        files = post.files.all()
+        for file in files:
+            file.file.delete(save=False)
+
+
+class TestTopicUpdateAPI(TestCase):
+    def setUp(self) -> None:
+        self.user = factories.UserFactory(username='testUser')
+        self.board = factories.BoardFactory(name='testBoard')
+        self.t1 = factories.TopicFactory(board=self.board, author=self.user, title='testTitle', content='a')
+        self.client.force_login(self.user)
+
+    def test_update_topic_without_file_works(self):
+        content = 'b'
+        title = 'newTitle'
+        resp = self.client.post(reverse('topic_edit'), data={
+            'votable_id': self.t1.id,
+            'content': content,
+            'title': title,
+            'files_to_keep': '{}',
+        })
+        self.t1.refresh_from_db()
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        self.assertEquals(content, self.t1.content)
+        self.assertEquals(title, self.t1.title)
+
+    def test_update_topic_by_emptying_fields_fails(self):
+        resp = self.client.post(reverse('topic_edit'), data={
+            'votable_id': self.t1.id,
+            'content': '',
+            'title': '',
+            'files_to_keep': '{}',
+        })
+        self.t1.refresh_from_db()
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_topic_by_faking_files_to_keep_fails(self):
+        resp = self.client.post(reverse('topic_edit'), data={
+            'votable_id': self.t1.id,
+            'content': self.t1.content,
+            'title': self.t1.title,
+            'files_to_keep': json.dumps({1: 2}),
+        })
+        self.t1.refresh_from_db()
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_update_topic_by_another_user_fails(self):
+        user2 = factories.UserFactory(username='user2', email='user2@mail.com')
+        self.client.force_login(user2)
+        resp = self.client.post(reverse('topic_edit'), data={
+            'votable_id': self.t1.id,
+            'content': self.t1.content,
+            'title': self.t1.title,
+            'files_to_keep': json.dumps({}),
+        })
+        self.t1.refresh_from_db()
+        self.assertEquals(resp.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_topic_by_emptying_text_and_adding_file_works(self):
+        self.assertEquals(self.t1.files.count(), 0)
+        file = SimpleUploadedFile('in1.jpg', create_image(None, "main/sample_data/images/in1.jpg").getvalue())
+        resp = self.client.post(reverse('topic_edit'), {
+            'votable_id': self.t1.id,
+            'content': '',
+            'title': self.t1.title,
+            'files': [file],
+            'files_to_keep': json.dumps({}),
+        })
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        self.t1.refresh_from_db()
+        self.assertEquals(self.t1.content, '')
+        self.assertEquals(self.t1.files.count(), 1)
+
+        files = self.t1.files.all()
+        self.assertEquals(len(files), 1)
+        for file in files:
+            file.file.delete(save=False)
+
+    def test_update_topic_with_files_by_emptying_all_content_fails(self):
+        file = factories.SubmissionMediaFactory()
+        topic = factories.TopicFactory(content='a', board=self.board, author=self.user)
+        topic.files.add(file)
+        topic.save()
+        topic.refresh_from_db()
+
+        self.assertEquals(topic.files.count(), 1)
+
+        resp = self.client.post(reverse('topic_edit'), {
+            'votable_id': topic.id,
+            'content': '',
+            'title': topic.title,
+            'files': [],
+            'files_to_keep': json.dumps({}),
+        })
+
+        self.assertEquals(resp.status_code, status.HTTP_400_BAD_REQUEST)
+        topic.refresh_from_db()
+        self.assertEquals(topic.content, 'a')
+        self.assertEquals(topic.files.count(), 1)
+
+        files = topic.files.all()
+        self.assertEquals(len(files), 1)
+        for file in files:
+            file.file.delete(save=False)
+
+    def test_update_post_keeping_some_files_works(self):
+        topic = factories.TopicFactory(content='a', board=self.board, author=self.user)
+        topic.files.add(factories.SubmissionMediaFactory())
+        topic.files.add(factories.SubmissionMediaFactory())
+        topic.save()
+        topic.refresh_from_db()
+
+        self.assertEquals(topic.files.count(), 2)
+
+        name_of_kept = topic.files.all()[1].file.name
+        resp = self.client.post(reverse('topic_edit'), {
+            'votable_id': topic.id,
+            'content': 'a',
+            'title': topic.title,
+            'files': [],
+            'files_to_keep': json.dumps({1: 0}),  # [keep first] ===> [Index in resulting file list]
+        })
+
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        topic.refresh_from_db()
+        self.assertEquals(topic.content, 'a')
+        self.assertEquals(topic.files.count(), 1)
+        self.assertEquals(topic.files.first().file.name, name_of_kept)
+
+        files = topic.files.all()
+        for file in files:
+            file.file.delete(save=False)
+
+    def test_update_post_keeping_some_files_works_2(self):
+        """ Repeat of earlier test ... only keeping the first file in this case """
+        topic = factories.TopicFactory(content='a', board=self.board, author=self.user)
+        topic.files.add(factories.SubmissionMediaFactory())
+        topic.files.add(factories.SubmissionMediaFactory())
+        topic.save()
+        topic.refresh_from_db()
+
+        self.assertEquals(topic.files.count(), 2)
+
+        name_of_kept = topic.files.all()[0].file.name
+        resp = self.client.post(reverse('topic_edit'), {
+            'votable_id': topic.id,
+            'content': 'a',
+            'title': topic.title,
+            'files': [],
+            'files_to_keep': json.dumps({0: 0}),  # [keep first] ===> [Index in resulting file list]
+        })
+
+        self.assertEquals(resp.status_code, status.HTTP_302_FOUND)
+        topic.refresh_from_db()
+        self.assertEquals(topic.content, 'a')
+        self.assertEquals(topic.files.count(), 1)
+        self.assertEquals(topic.files.first().file.name, name_of_kept)
+
+        files = topic.files.all()
+        for file in files:
+            file.file.delete(save=False)

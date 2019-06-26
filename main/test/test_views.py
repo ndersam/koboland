@@ -3,7 +3,7 @@ from unittest.mock import patch
 from django.contrib import auth
 from django.test import TestCase
 from django.urls import reverse
-
+from rest_framework import status
 from main import forms, models, factories
 
 
@@ -135,3 +135,10 @@ class TestUpdateTopicPage(TestCase):
         self.assertTrue(field.widget.is_hidden)
         self.assertIsInstance(resp.context['form'], forms.TopicUpdateForm)
         self.assertTemplateUsed(resp, 'main/topic_update.html')
+
+    def test_page_load_incorrectly_for_wrong_user(self):
+        usr2 = factories.UserFactory(username='user2', email='user2@@mail.com')
+        self.client.force_login(usr2)
+        resp = self.client.get(reverse('topic-update-view', kwargs={'topic_id': self.topic.id}))
+        self.assertNotEqual(resp.status_code, status.HTTP_200_OK)
+        self.assertEquals(resp.status_code, status.HTTP_403_FORBIDDEN)
